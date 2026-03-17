@@ -1,2 +1,73 @@
+# =========================
+# 🔐 ENV & SECRETS
+# =========================
 .env
 *.env
+.env.*
+
+# =========================
+# 🐍 PYTHON
+# =========================
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+*.so
+
+# Virtual environments
+venv/
+env/
+.venv/
+
+# =========================
+# 📦 PACKAGES / BUILD
+# =========================
+build/
+dist/
+*.egg-info/
+.eggs/
+
+# =========================
+# 🧪 TEST / COVERAGE
+# =========================
+.coverage
+htmlcov/
+.pytest_cache/
+
+# =========================
+# 🧠 IDE / EDITOR
+# =========================
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# =========================
+# 🗃️ DATABASE / LOCAL FILES
+# =========================
+*.db
+*.sqlite3
+
+# =========================
+# 🪵 LOGS
+# =========================
+*.log
+
+# =========================
+# 🌐 SCRAPER / OUTPUT FILES
+# =========================
+output/
+downloads/
+scraped_data/
+temp/
+
+# =========================
+# 🐳 DOCKER (optional)
+# =========================
+.dockerignore
+
+# =========================
+# 📁 OS FILES
+# =========================
+.DS_Store
+Thumbs.db
