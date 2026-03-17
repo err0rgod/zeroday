@@ -3,8 +3,9 @@ from groq import Groq
 from dotenv import load_dotenv
 from utils import rate_limit_and_retry
 
-# Load environment variables
-load_dotenv()
+# Load environment variables from the root directory's .env
+_env_path = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), ".env")
+load_dotenv(_env_path)
 
 @rate_limit_and_retry(max_retries=3, base_delay=2.0)
 def categorize_article(title: str, summary: str) -> str:

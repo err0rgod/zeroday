@@ -2,8 +2,8 @@ import os
 import resend
 from dotenv import load_dotenv
 
-# Load environment variables from the web directory's .env
-_env_path = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), ".env")
+# Load environment variables from the root directory's .env
+_env_path = os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))), ".env")
 load_dotenv(_env_path)
 
 resend.api_key = os.getenv("RESEND_API_KEY", "")
