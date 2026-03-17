@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}ZeroDay Weekly{% endblock %}</title>
+    <meta name="description" content="Weekly insights on cybersecurity news, vulnerabilities, and research.">
+    
+    <!-- Google Fonts: Inter -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
+    <!-- Tailwind CSS (CDN for simplicity, targeting dark mode by default) -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                    },
+                    colors: {
+                        dark: {
+                            900: '#0f172a', /* slate-900 */
+                            800: '#1e293b', /* slate-800 */
+                            700: '#334155',
+                        },
+                        brand: {
+                            500: '#3b82f6', /* blue-500 */
+                            400: '#60a5fa', /* blue-400 */
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    
+    <!-- Custom Styles -->
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #0f172a;
+            color: #f8fafc;
+            -webkit-font-smoothing: antialiased;
+        }
+        
+        .smooth-shadow {
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.3), 0 2px 4px -1px rgba(0, 0, 0, 0.16);
+        }
+        
+        .hover-lift {
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+        }
+        .hover-lift:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.4), 0 4px 6px -2px rgba(0, 0, 0, 0.2);
+        }
+
+        .gradient-text {
+            background-clip: text;
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-image: linear-gradient(to right, #60a5fa, #a78bfa);
+        }
+
+        /* Reading Progress Bar */
+        #progress-container {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 4px;
+            background: transparent;
+            z-index: 50;
+        }
+        #progress-bar {
+            height: 100%;
+            background: linear-gradient(to right, #3b82f6, #8b5cf6);
+            width: 0%;
+            transition: width 0.1s ease;
+        }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col selection:bg-brand-500 selection:text-white">
+    
+    {% block progress_bar %}{% endblock %}
+
+    <!-- Navbar -->
+    <nav class="sticky top-0 z-40 w-full backdrop-blur flex-none transition-colors duration-500 bg-dark-900/80 border-b border-slate-800">
+        <div class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex items-center justify-between h-16">
+                <!-- Logo -->
+                <div class="flex-shrink-0">
+                    <a href="/" class="flex items-center gap-3">
+                        <img src="/static/logo.png" alt="ZeroDay Weekly Logo" class="w-10 h-10 object-contain rounded-md" onerror="this.src='data:image/svg+xml;utf8,<svg xmlns=\'http://www.w3.org/2000/svg\' width=\'40\' height=\'40\'><rect width=\'40\' height=\'40\' fill=\'#3b82f6\'/><text x=\'50%\' y=\'50%\' font-family=\'sans-serif\' font-size=\'16\' fill=\'white\' text-anchor=\'middle\' dy=\'.3em\'>ZW</text></svg>'">
+                        <span class="font-bold text-xl tracking-tight">ZeroDay <span class="text-brand-400">Weekly</span></span>
+                    </a>
+                </div>
+                
+                <!-- Links -->
+                <div class="hidden md:flex items-center gap-6">
+                    <a href="/" class="text-sm font-medium text-slate-300 hover:text-white transition-colors">Home</a>
+                    <a href="/archive" class="text-sm font-medium text-slate-300 hover:text-white transition-colors">Archive</a>
+                    
+                    <form action="/search" method="GET" class="relative">
+                        <input type="text" name="q" placeholder="Search..." class="bg-dark-800 border border-slate-700 text-sm rounded-full pl-3 pr-8 py-1.5 focus:outline-none focus:ring-1 focus:ring-brand-500 text-slate-200 w-48 transition-all focus:w-64 placeholder-slate-500">
+                        <button type="submit" class="absolute right-2.5 top-2 text-slate-400 hover:text-brand-400">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
+                        </button>
+                    </form>
+                    
+                    <a href="/rss.xml" class="text-slate-400 hover:text-orange-400 transition-colors" title="RSS Feed">
+                        <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24"><path d="M6.18 15.64a2.18 2.18 0 0 1 2.18 2.18C8.36 19 7.38 20 6.18 20C5 20 4 19 4 17.82a2.18 2.18 0 0 1 2.18-2.18M4 4.08V8.1a9.92 9.92 0 0 1 9.92 9.92h4.03A13.95 13.95 0 0 0 4 4.08m0 5.88v4.03A4.04 4.04 0 0 1 8.04 18h4.04A8.08 8.08 0 0 0 4 9.96z"/></svg>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <main class="flex-grow">
+        {% block content %}{% endblock %}
+    </main>
+
+    <!-- Footer -->
+    <footer class="border-t border-slate-800 bg-dark-900 mt-20">
+        <div class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+            <div class="flex flex-col md:flex-row justify-between items-center gap-6">
+                <div class="flex items-center gap-3">
+                    <img src="/static/logo.png" alt="ZeroDay Weekly Logo" class="w-8 h-8 object-contain rounded opacity-80" onerror="this.src='data:image/svg+xml;utf8,<svg xmlns=\'http://www.w3.org/2000/svg\' width=\'32\' height=\'32\'><rect width=\'32\' height=\'32\' fill=\'#334155\'/><text x=\'50%\' y=\'50%\' font-family=\'sans-serif\' font-size=\'12\' fill=\'white\' text-anchor=\'middle\' dy=\'.3em\'>ZW</text></svg>'">
+                    <span class="font-semibold text-lg">ZeroDay <span class="text-brand-400">Weekly</span></span>
+                </div>
+                
+                <div class="flex items-center gap-6 text-sm text-slate-400">
+                    <a href="/archive" class="hover:text-white transition-colors">Archive</a>
+                    <a href="/rss.xml" class="hover:text-white transition-colors">RSS Feed</a>
+                    <a href="#" class="hover:text-white transition-colors">Twitter</a>
+                    <a href="#" class="hover:text-white transition-colors">GitHub</a>
+                </div>
+            </div>
+            <div class="mt-8 text-center text-xs text-slate-500">
+                &copy; {{ range(2026, 2027)|random }} ZeroDay Weekly. Automatically generated every week.
+            </div>
+        </div>
+    </footer>
+
+    {% block scripts %}{% endblock %}
+
+    <!-- Analytics Tracking Script -->
+    <script>
+        (function() {
+            // Track Page View on load
+            const currentPath = window.location.pathname;
+            fetch('/api/track/view', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ path: currentPath })
+            }).catch(e => console.error("Tracking error:", e));
+
+            // Track Read Time
+            const startTime = Date.now();
+            document.addEventListener('visibilitychange', function() {
+                if (document.visibilityState === 'hidden') {
+                    const durationSeconds = Math.round((Date.now() - startTime) / 1000);
+                    // sendBeacon is reliable for page unloads
+                    const payload = JSON.stringify({ 
+                        path: currentPath, 
+                        duration_seconds: durationSeconds 
+                    });
+                    
+                    // Uses Blob since sendBeacon defaults to text/plain for strings
+                    const blob = new Blob([payload], { type: 'application/json' });
+                    navigator.sendBeacon('/api/track/time', blob);
+                }
+            });
+        })();
+    </script>
+</body>
+</html>

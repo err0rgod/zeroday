@@ -1,0 +1,64 @@
+{% extends "base.html" %}
+
+{% block title %}Archive - CyberBrief{% endblock %}
+
+{% block content %}
+<div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
+    <div class="mb-12">
+        <h1 class="text-4xl md:text-5xl font-extrabold tracking-tight mb-4">Issues Archive</h1>
+        <p class="text-lg text-slate-400">Past editions of the weekly digest, sorted newest to oldest.</p>
+    </div>
+
+    {% if issues %}
+    <div class="space-y-6">
+        {% for item in issues %}
+        <a href="/issue/{{ item.date }}" class="group block bg-dark-800 border border-slate-800 rounded-xl p-6 md:p-8 hover-lift smooth-shadow transition-all relative overflow-hidden">
+            <!-- Decorative accent -->
+            <div class="absolute top-0 left-0 w-1 h-full bg-slate-700 group-hover:bg-brand-500 transition-colors"></div>
+            
+            <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
+                <div class="flex-1">
+                    <div class="flex items-center gap-3 mb-3">
+                        <svg class="w-5 h-5 text-slate-500 group-hover:text-brand-500 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>
+                        <time datetime="{{ item.date }}" class="text-sm font-semibold text-slate-400 tracking-wider uppercase">{{ item.date }}</time>
+                    </div>
+                    <h2 class="text-2xl font-bold mb-2 group-hover:text-brand-400 transition-colors">
+                        Issue {{ item.date }}
+                    </h2>
+                    
+                    <p class="text-slate-400 line-clamp-2 md:line-clamp-1">
+                    {% if item.data and item.data.top_stories %}
+                        Featuring: {{ item.data.top_stories[0].title }} & more...
+                    {% else %}
+                        Weekly security insights, news, and vulnerabilities.
+                    {% endif %}
+                    </p>
+                </div>
+                
+                <div class="hidden md:flex flex-col items-end gap-2 text-sm text-slate-500">
+                    <span class="bg-dark-900 border border-slate-700 px-3 py-1 rounded-full whitespace-nowrap">
+                        {{ item.data.top_stories|length if item.data else 0 }} Stories
+                    </span>
+                    <span class="bg-dark-900 border border-slate-700 px-3 py-1 rounded-full whitespace-nowrap">
+                        {{ item.data.cves|length if item.data else 0 }} CVEs
+                    </span>
+                </div>
+                
+                <div class="mt-4 md:mt-0 md:ml-6 flex-shrink-0">
+                    <div class="w-10 h-10 rounded-full bg-slate-800 group-hover:bg-brand-500 flex items-center justify-center text-slate-400 group-hover:text-white transition-colors">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path></svg>
+                    </div>
+                </div>
+            </div>
+        </a>
+        {% endfor %}
+    </div>
+    {% else %}
+    <div class="bg-dark-800 border-2 border-dashed border-slate-700 rounded-xl p-12 text-center text-slate-400">
+        <svg class="w-12 h-12 mx-auto mb-4 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4"></path></svg>
+        <p class="font-medium">No published issues found yet.</p>
+        <p class="text-sm mt-1">Run the scraper pipeline to generate the first issue!</p>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

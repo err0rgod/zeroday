@@ -1,0 +1,14 @@
+fastapi
+uvicorn
+jinja2
+python-multipart
+python-dateutil
+feedgen
+email-validator
+phonenumbers
+slowapi
+sqlalchemy
+passlib
+bcrypt
+resend
+python-dotenv

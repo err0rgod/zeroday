@@ -1,0 +1,254 @@
+{% extends "base.html" %}
+
+{% block title %}Issue {{ date_str }} - CyberBrief{% endblock %}
+
+{% block progress_bar %}
+<div id="progress-container">
+    <div id="progress-bar"></div>
+</div>
+{% endblock %}
+
+{% block content %}
+<article class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-12 md:py-20 lg:py-24">
+    
+    <!-- Meta Data -->
+    <div class="mb-10 text-center">
+        <a href="/archive" class="inline-flex items-center gap-2 text-sm text-slate-400 hover:text-brand-400 font-medium mb-6 transition-colors group">
+            <svg class="w-4 h-4 transform group-hover:-translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path></svg>
+            Back to Archive
+        </a>
+        <h1 class="text-4xl md:text-5xl lg:text-6xl font-extrabold tracking-tight mb-4">
+            Weekly Digest
+        </h1>
+        <div class="flex items-center justify-center gap-3 text-slate-400 font-medium">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>
+            <time datetime="{{ date_str }}">{{ date_str }}</time>
+        </div>
+    </div>
+
+    <!-- Divider -->
+    <div class="h-px bg-gradient-to-r from-transparent via-slate-700 to-transparent w-full mb-16"></div>
+
+    <!-- Top Stories Section -->
+    {% if issue.top_stories %}
+    <section class="mb-20">
+        <h2 class="text-2xl md:text-3xl font-bold mb-8 flex items-center gap-3">
+            <span class="bg-brand-500/10 text-brand-400 p-2 rounded-lg">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 20H5a2 2 0 01-2-2V6a2 2 0 012-2h10a2 2 0 012 2v1m2 13a2 2 0 01-2-2V7m2 13a2 2 0 002-2V9.5a2.5 2.5 0 00-2.5-2.5H15"></path></svg>
+            </span>
+            Major Security News
+        </h2>
+        
+        <div class="space-y-12">
+            {% for story in issue.top_stories %}
+            <div class="group relative pl-6 border-l-2 border-slate-800 hover:border-brand-500 transition-colors pt-2 pb-2">
+                <!-- Anchor copy link -->
+                <button onclick="copyLink('story-{{ loop.index }}')" class="absolute -left-[11px] top-4 bg-dark-900 text-slate-600 group-hover:text-brand-400 p-1 opacity-0 group-hover:opacity-100 transition-opacity" title="Copy link to this story">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1"></path></svg>
+                </button>
+                
+                <h3 id="story-{{ loop.index }}" class="text-xl md:text-2xl font-bold mb-4 text-slate-100 leading-snug">
+                    {% if story.url %}
+                    <a href="{{ story.url }}" target="_blank" rel="noopener noreferrer" class="hover:text-brand-400 transition-colors inline-block">{{ story.title }}</a>
+                    {% else %}
+                    {{ story.title }}
+                    {% endif %}
+                </h3>
+                
+                {% if story.category %}
+                <span class="inline-block bg-slate-800 text-slate-300 text-xs font-semibold px-2.5 py-1 rounded mb-4">
+                    {{ story.category }}
+                </span>
+                {% endif %}
+                
+                <div class="prose prose-invert max-w-none text-slate-300">
+                    <p class="font-medium text-slate-200 text-lg leading-relaxed mb-4">{{ story.short_summary }}</p>
+                    <p class="text-slate-400 leading-relaxed">{{ story.deep_summary }}</p>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </section>
+    {% endif %}
+
+    <!-- Divider -->
+    <div class="h-px bg-slate-800 w-full mb-16"></div>
+
+    <!-- CVEs Section -->
+    {% if issue.cves %}
+    <section class="mb-20">
+        <h2 class="text-2xl md:text-3xl font-bold mb-8 flex items-center gap-3">
+            <span class="bg-orange-500/10 text-orange-400 p-2 rounded-lg">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path></svg>
+            </span>
+            Vulnerabilities & CVEs
+        </h2>
+        
+        <div class="grid gap-6">
+            {% for cve in issue.cves %}
+            <div class="bg-dark-800/50 border border-slate-700 rounded-xl p-6 relative group">
+                <button onclick="copyLink('cve-{{ loop.index }}')" class="absolute right-4 top-4 text-slate-500 group-hover:text-brand-400 opacity-0 group-hover:opacity-100 transition-opacity" title="Copy link to this CVE">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1"></path></svg>
+                </button>
+                <h3 id="cve-{{ loop.index }}" class="text-lg font-bold text-orange-400 mb-3">{{ cve.title }}</h3>
+                <p class="text-slate-300 leading-relaxed text-sm">{{ cve.summary }}</p>
+                {% if cve.cve_ids %}
+                <div class="mt-4 flex flex-wrap gap-2">
+                    {% for cve_id in cve.cve_ids %}
+                    <a href="https://nvd.nist.gov/vuln/detail/{{ cve_id }}" target="_blank" rel="noopener noreferrer" class="text-xs font-semibold text-slate-400 hover:text-white transition-colors bg-dark-900 border border-slate-700 px-3 py-1.5 rounded inline-flex items-center gap-1">
+                        View {{ cve_id }} on NVD
+                        <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"></path></svg>
+                    </a>
+                    {% endfor %}
+                </div>
+                {% elif cve.cve_id and ('CVE-' in cve.cve_id | upper) and (cve.cve_id | length < 25) %}
+                <!-- Fallback for older issues that still have the string field but it looks valid -->
+                <div class="mt-4">
+                    <a href="https://nvd.nist.gov/vuln/detail/{{ cve.cve_id }}" target="_blank" rel="noopener noreferrer" class="text-xs font-semibold text-slate-400 hover:text-white transition-colors bg-dark-900 border border-slate-700 px-3 py-1.5 rounded inline-flex items-center gap-1">
+                        View on NVD
+                        <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"></path></svg>
+                    </a>
+                </div>
+                {% endif %}
+            </div>
+            {% endfor %}
+        </div>
+    </section>
+    {% endif %}
+    
+    <!-- Footer CTA -->
+    <div class="mt-20 bg-dark-800 rounded-2xl p-8 border border-slate-700 text-center">
+        <h3 class="text-xl font-bold mb-3">Found this issue useful?</h3>
+        <p class="text-slate-400 mb-6 max-w-lg mx-auto">Get next week's insights delivered straight to your inbox and WhatsApp. No spam. Unsubscribe anytime.</p>
+        <div id="issue-verify-sent" class="hidden bg-blue-500/10 border border-blue-500/20 text-blue-400 rounded-lg p-4 font-medium mb-6 text-sm max-w-md mx-auto">
+            Subscription request received! Please check your email for the verification link to complete the process.
+        </div>
+
+        <form id="issue-subscribe-form" class="flex flex-col gap-3 max-w-md mx-auto">
+            <input type="text" name="b_url" style="display:none" tabindex="-1" autocomplete="off">
+            <input type="email" id="issue_email" name="email" required placeholder="name@company.com" 
+                   class="w-full bg-dark-900 border border-slate-700 rounded-lg px-4 py-2 text-slate-200 focus:outline-none focus:ring-2 focus:ring-brand-500 transition-all">
+            
+            <div class="flex gap-2">
+                <select id="issue-country-code" name="country_code" class="bg-dark-900 border border-slate-700 rounded-lg px-2 py-2 text-slate-200 focus:outline-none focus:ring-2 focus:ring-brand-500 transition-all text-sm w-28 mt-1">
+                    <option value="+91" selected>IN +91</option>
+                    <option value="+1">US +1</option>
+                    <option value="+44">UK +44</option>
+                    <option value="+971">UAE +971</option>
+                    <option value="+61">AU +61</option>
+                    <option value="+49">DE +49</option>
+                    <option value="+33">FR +33</option>
+                    <option value="+81">JP +81</option>
+                    <option value="+86">CN +86</option>
+                    <option value="+7">RU +7</option>
+                    <option value="+55">BR +55</option>
+                    <option value="+27">ZA +27</option>
+                </select>
+                <input type="tel" id="issue_whatsapp" name="whatsapp_raw" required placeholder="WhatsApp Number" 
+                       class="flex-1 bg-dark-900 border border-slate-700 rounded-lg px-4 py-2 text-slate-200 focus:outline-none focus:ring-2 focus:ring-brand-500 transition-all mt-1">
+            </div>
+
+            <div id="issue-dynamic-error" class="hidden text-red-500 text-sm font-medium text-left"></div>
+            <button type="submit" id="issue-submit-btn" 
+                    class="w-full bg-brand-500 hover:bg-brand-400 text-white font-medium rounded-lg px-6 py-2 transition-colors mt-2">
+                Subscribe
+            </button>
+        </form>
+    </div>
+
+</article>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    // Reading Progress Bar
+    window.onscroll = function() {
+        var winScroll = document.body.scrollTop || document.documentElement.scrollTop;
+        var height = document.documentElement.scrollHeight - document.documentElement.clientHeight;
+        var scrolled = (winScroll / height) * 100;
+        document.getElementById("progress-bar").style.width = scrolled + "%";
+    };
+
+    // Copy Link functionality
+    function copyLink(id) {
+        const url = window.location.href.split('#')[0] + '#' + id;
+        navigator.clipboard.writeText(url).then(() => {
+            // Optional: Show a subtle toast or change icon briefly
+            const btn = document.querySelector(`button[onclick="copyLink('${id}')"]`);
+            const ogHTML = btn.innerHTML;
+            btn.innerHTML = `<svg class="w-4 h-4 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>`;
+            setTimeout(() => { btn.innerHTML = ogHTML; }, 2000);
+        });
+    }
+
+    function showIssueError(elId, msg) {
+        const errorDiv = document.getElementById(elId);
+        errorDiv.innerText = msg;
+        errorDiv.classList.remove('hidden');
+    }
+
+    function hideIssueError(elId) {
+        const errorDiv = document.getElementById(elId);
+        errorDiv.classList.add('hidden');
+        errorDiv.innerText = '';
+    }
+
+    function validateIssueInputs() {
+        hideIssueError('issue-dynamic-error');
+        const email = document.getElementById('issue_email').value.toLowerCase();
+        const whatsapp = document.getElementById('issue_whatsapp').value;
+        
+        const fakeKeywords = ['test', 'temp', 'example', 'fake', 'dummy'];
+        for(let kw of fakeKeywords) {
+            if (email.includes(kw)) {
+                showIssueError('issue-dynamic-error', "Temporary or fake email addresses are not allowed.");
+                return false;
+            }
+        }
+        
+        if (whatsapp.replace(/\D/g, '').length < 7) {
+            showIssueError('issue-dynamic-error', "Please provide a valid phone number.");
+            return false;
+        }
+        return true;
+    }
+
+    document.getElementById('issue-subscribe-form').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        if (!validateIssueInputs()) return;
+        
+        const btn = document.getElementById('issue-submit-btn');
+        btn.innerText = 'Requesting...';
+        btn.disabled = true;
+
+        const countryCode = document.getElementById('issue-country-code').value;
+        const whatsappRaw = document.getElementById('issue_whatsapp').value;
+        const fullWhatsapp = countryCode + whatsappRaw.replace(/\D/g, '');
+
+        const formData = new FormData();
+        formData.append('email', document.getElementById('issue_email').value);
+        formData.append('whatsapp', fullWhatsapp);
+        formData.append('b_url', e.target.elements.b_url.value);
+
+        try {
+            const res = await fetch('/api/subscribe', { method: 'POST', body: formData });
+            const data = await res.json();
+            if (data.success) {
+                if (data.message === "Bot detected") {
+                    showIssueError('issue-dynamic-error', "Invalid session.");
+                    return;
+                }
+                document.getElementById('issue-subscribe-form').classList.add('hidden');
+                document.getElementById('issue-verify-sent').classList.remove('hidden');
+            } else {
+                showIssueError('issue-dynamic-error', data.error || 'Subscription failed');
+            }
+        } catch (err) {
+            showIssueError('issue-dynamic-error', 'Network error occurred. Try again later.');
+        } finally {
+            btn.innerText = 'Subscribe';
+            btn.disabled = false;
+        }
+    });
+</script>
+{% endblock %}

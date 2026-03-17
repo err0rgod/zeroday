@@ -1,0 +1,250 @@
+{% extends "base.html" %}
+
+{% block title %}Cybersecurity Weekly Brief{% endblock %}
+
+{% block content %}
+<!-- Hero Section -->
+<section class="relative pt-24 pb-16 overflow-hidden">
+    <!-- Subtle Background Glow -->
+    <div class="absolute inset-0 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-brand-500/10 via-dark-900/0 to-dark-900/0 z-[-1]"></div>
+    
+    <div class="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+        <h1 class="text-5xl md:text-6xl font-extrabold tracking-tight mb-6">
+            Stay Ahead of the <br>
+            <span class="gradient-text">Threat Landscape</span>
+        </h1>
+        <p class="text-lg md:text-xl text-slate-300 mb-10 max-w-2xl mx-auto leading-relaxed">
+            Curated cybersecurity news, distilled vulnerability breakdowns, and the latest threat research. Delivered automatically every week.
+        </p>
+        
+        <!-- Subscribe Form -->
+        <div class="max-w-md mx-auto p-1 relative">
+            {% if request.query_params.get('subscribed') == 'true' %}
+            <div class="bg-green-500/10 border border-green-500/20 text-green-400 rounded-lg p-4 font-medium mb-6">
+                Thanks for subscribing! You'll receive updates via email and WhatsApp.
+            </div>
+            {% endif %}
+            
+            <div id="email-verify-sent" class="hidden bg-blue-500/10 border border-blue-500/20 text-blue-400 rounded-lg p-4 font-medium mb-6 text-sm">
+                Subscription request received! Please check your email for the verification link to complete the process.
+            </div>
+
+            <form id="subscribe-form" class="flex flex-col gap-3">
+                <input type="text" name="b_url" style="display:none" tabindex="-1" autocomplete="off">
+                <input type="email" id="email" name="email" required placeholder="Enter your email address" 
+                       class="w-full bg-dark-800 border border-slate-700 rounded-lg px-4 py-3 text-slate-200 focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-transparent transition-all placeholder-slate-500 shadow-inner">
+                
+                <div class="flex gap-2">
+                    <select id="country-code" name="country_code" class="bg-dark-800 border border-slate-700 rounded-lg px-2 py-3 text-slate-200 focus:outline-none focus:ring-2 focus:ring-brand-500 transition-all text-sm w-28 shadow-inner mt-1">
+                        <option value="+91" selected>IN +91</option>
+                        <option value="+1">US +1</option>
+                        <option value="+44">UK +44</option>
+                        <option value="+971">UAE +971</option>
+                        <option value="+61">AU +61</option>
+                        <option value="+49">DE +49</option>
+                        <option value="+33">FR +33</option>
+                        <option value="+81">JP +81</option>
+                        <option value="+86">CN +86</option>
+                        <option value="+7">RU +7</option>
+                        <option value="+55">BR +55</option>
+                        <option value="+27">ZA +27</option>
+                    </select>
+                    <input type="tel" id="whatsapp" name="whatsapp_raw" required placeholder="WhatsApp Number" 
+                           class="flex-1 bg-dark-800 border border-slate-700 rounded-lg px-4 py-3 text-slate-200 focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-transparent transition-all placeholder-slate-500 shadow-inner mt-1">
+                </div>
+                
+                <div id="dynamic-error" class="hidden text-red-500 text-sm font-medium"></div>
+                <button type="submit" id="submit-btn"
+                        class="w-full bg-brand-500 hover:bg-brand-400 text-white font-medium rounded-lg px-6 py-3 transition-colors shadow-lg shadow-brand-500/20 mt-2">
+                    Subscribe
+                </button>
+            </form>
+
+            <p class="text-xs text-slate-500 mt-4">No spam. Only high-signal security intel.</p>
+
+<script>
+function showError(elId, msg) {
+    const errorDiv = document.getElementById(elId);
+    errorDiv.innerText = msg;
+    errorDiv.classList.remove('hidden');
+}
+
+function hideError(elId) {
+    const errorDiv = document.getElementById(elId);
+    errorDiv.classList.add('hidden');
+    errorDiv.innerText = '';
+}
+
+function validateInputs() {
+    hideError('dynamic-error');
+    const email = document.getElementById('email').value.toLowerCase();
+    const whatsapp = document.getElementById('whatsapp').value;
+    
+    const fakeKeywords = ['test', 'temp', 'example', 'fake', 'dummy'];
+    for(let kw of fakeKeywords) {
+        if (email.includes(kw)) {
+            showError('dynamic-error', "Temporary or fake email addresses are not allowed.");
+            return false;
+        }
+    }
+    
+    if (whatsapp.replace(/\D/g, '').length < 7) {
+        showError('dynamic-error', "Please provide a valid phone number.");
+        return false;
+    }
+    return true;
+}
+
+document.getElementById('subscribe-form').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    if (!validateInputs()) return;
+    
+    const btn = document.getElementById('submit-btn');
+    btn.innerText = 'Requesting...';
+    btn.disabled = true;
+
+    const countryCode = document.getElementById('country-code').value;
+    const whatsappRaw = document.getElementById('whatsapp').value;
+    const fullWhatsapp = countryCode + whatsappRaw.replace(/\D/g, '');
+
+    const formData = new FormData();
+    formData.append('email', document.getElementById('email').value);
+    formData.append('whatsapp', fullWhatsapp);
+    formData.append('b_url', e.target.elements.b_url.value);
+
+    try {
+        const res = await fetch('/api/subscribe', { method: 'POST', body: formData });
+        const data = await res.json();
+        if (data.success) {
+            if (data.message === "Bot detected") {
+                showError('dynamic-error', "Invalid session.");
+                return;
+            }
+            document.getElementById('subscribe-form').classList.add('hidden');
+            document.getElementById('email-verify-sent').classList.remove('hidden');
+        } else {
+            showError('dynamic-error', data.error || 'Subscription failed');
+        }
+    } catch (err) {
+        showError('dynamic-error', 'Network error occurred. Try again later.');
+    } finally {
+        btn.innerText = 'Subscribe';
+        btn.disabled = false;
+    }
+});
+</script>
+        </div>
+        
+        <!-- Action Links -->
+        <div class="mt-8 flex justify-center gap-4">
+            {% if latest_date %}
+            <a href="/issue/{{ latest_date }}" class="text-sm font-medium text-slate-300 hover:text-white flex items-center gap-1 transition-colors">
+                Read Latest Issue
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"></path></svg>
+            </a>
+            {% endif %}
+        </div>
+    </div>
+</section>
+
+<!-- Latest Issue Highlight -->
+{% if latest_issue and latest_date %}
+<section class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+    <div class="flex items-center gap-4 mb-8">
+        <h2 class="text-2xl font-bold">Latest Issue</h2>
+        <div class="h-px bg-slate-800 flex-1"></div>
+    </div>
+    
+    <a href="/issue/{{ latest_date }}" class="block bg-dark-800 border border-slate-800 rounded-2xl p-6 md:p-8 hover-lift smooth-shadow group relative overflow-hidden">
+        <!-- Decorative subtle accent -->
+        <div class="absolute top-0 left-0 w-1 h-full bg-brand-500 opacity-0 group-hover:opacity-100 transition-opacity"></div>
+        
+        <div class="flex justify-between items-start mb-4">
+            <h3 class="text-3xl font-bold group-hover:text-brand-400 transition-colors">Issue {{ latest_date }}</h3>
+            <span class="bg-brand-500/10 text-brand-400 text-xs font-semibold px-2.5 py-1 rounded-full border border-brand-500/20">NEW</span>
+        </div>
+        
+        <div class="grid md:grid-cols-2 gap-8 mt-6">
+            <div>
+                <h4 class="text-sm uppercase tracking-wider text-slate-500 font-semibold mb-3">Top Stories</h4>
+                <ul class="space-y-3">
+                    {% for story in latest_issue.top_stories[:3] %}
+                    <li class="flex items-start gap-2">
+                        <svg class="w-5 h-5 text-brand-500 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                        <span class="text-slate-300">{{ story.title }}</span>
+                    </li>
+                    {% endfor %}
+                </ul>
+            </div>
+            
+            {% if latest_issue.cves %}
+            <div>
+                <h4 class="text-sm uppercase tracking-wider text-slate-500 font-semibold mb-3">Critical CVEs</h4>
+                <ul class="space-y-3">
+                    {% for cve in latest_issue.cves[:3] %}
+                    <li class="flex items-start gap-2">
+                        <svg class="w-5 h-5 text-orange-500 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path></svg>
+                        <span class="text-slate-300">{{ cve.title }}</span>
+                    </li>
+                    {% endfor %}
+                </ul>
+            </div>
+            {% endif %}
+        </div>
+    </a>
+</section>
+{% endif %}
+
+<!-- Value Proposition -->
+<section class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
+    <div class="grid md:grid-cols-3 gap-8">
+        <div class="bg-dark-800/50 rounded-xl p-6 border border-slate-800">
+            <div class="w-12 h-12 bg-blue-500/10 rounded-lg flex items-center justify-center mb-4 text-blue-400">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 20H5a2 2 0 01-2-2V6a2 2 0 012-2h10a2 2 0 012 2v1m2 13a2 2 0 01-2-2V7m2 13a2 2 0 002-2V9.5a2.5 2.5 0 00-2.5-2.5H15"></path></svg>
+            </div>
+            <h3 class="text-lg font-bold mb-2">Curated News</h3>
+            <p class="text-slate-400 text-sm leading-relaxed">We automatically aggregate and filter through thousands of articles to bring you the signal through the noise.</p>
+        </div>
+        <div class="bg-dark-800/50 rounded-xl p-6 border border-slate-800">
+            <div class="w-12 h-12 bg-orange-500/10 rounded-lg flex items-center justify-center mb-4 text-orange-400">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path></svg>
+            </div>
+            <h3 class="text-lg font-bold mb-2">Vulnerability Breakdowns</h3>
+            <p class="text-slate-400 text-sm leading-relaxed">Direct feeds from NVD and Project Zero, summarized to explain impact quickly without the fluff.</p>
+        </div>
+        <div class="bg-dark-800/50 rounded-xl p-6 border border-slate-800">
+            <div class="w-12 h-12 bg-purple-500/10 rounded-lg flex items-center justify-center mb-4 text-purple-400">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path></svg>
+            </div>
+            <h3 class="text-lg font-bold mb-2">Threat Research</h3>
+            <p class="text-slate-400 text-sm leading-relaxed">Highlighting new malware variants, APT actor movements, and deep-dive technical research.</p>
+        </div>
+    </div>
+</section>
+
+<!-- Archive Preview -->
+{% if archive_previews and archive_previews|length > 1 %}
+<section class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-12 mb-10">
+    <div class="flex items-center justify-between mb-8">
+        <div class="flex items-center gap-4 flex-1 pr-4">
+            <h2 class="text-2xl font-bold">Recent Issues</h2>
+            <div class="h-px bg-slate-800 flex-1 hidden sm:block"></div>
+        </div>
+        <a href="/archive" class="text-sm font-medium text-brand-400 hover:text-brand-300 transition-colors">View All &rarr;</a>
+    </div>
+    
+    <div class="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
+        {% for d in archive_previews[1:] %}
+        <a href="/issue/{{ d }}" class="group block bg-dark-800 border border-slate-800 rounded-xl p-5 hover-lift">
+            <div class="flex items-center gap-2 mb-3">
+                <svg class="w-4 h-4 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>
+                <span class="text-sm font-medium text-slate-400">{{ d }}</span>
+            </div>
+            <h3 class="text-lg font-bold mb-2 group-hover:text-brand-400 transition-colors">Issue {{ d }}</h3>
+            <p class="text-sm text-slate-400 line-clamp-2">Weekly digest of top cybersecurity news, critical CVEs, and the latest threat landscape updates.</p>
+        </a>
+        {% endfor %}
+    </div>
+</section>
+{% endif %}
+{% endblock %}
