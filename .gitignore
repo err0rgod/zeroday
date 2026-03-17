@@ -1,6 +1,5 @@
 #temporary test files for windows, not to be committed
 start.bat
-
 # =========================
 # 🔐 ENV & SECRETS
 # =========================
@@ -51,6 +50,7 @@ htmlcov/
 # =========================
 *.db
 *.sqlite3
+data/
 
 # =========================
 # 🪵 LOGS

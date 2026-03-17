@@ -171,7 +171,9 @@ def main():
     import os
     from datetime import datetime
 
-    output_dir = os.path.join("output", datetime.today().strftime("%Y-%m-%d"))
+    PROJECT_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+    DATA_DIR = os.getenv("DATA_DIR", os.path.join(PROJECT_ROOT, "data"))
+    output_dir = os.path.join(DATA_DIR, "output", datetime.today().strftime("%Y-%m-%d"))
     os.makedirs(output_dir, exist_ok=True)
 
     raw_output_file = os.path.join(output_dir, "scraped_data.json")

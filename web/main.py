@@ -22,7 +22,12 @@ from lib.notifications import send_verification_email
 
 # --- Constants ---
 TOKEN_EXPIRY_HOURS = 24
-SUBSCRIBERS_JSON = os.path.abspath(os.path.join(os.path.dirname(__file__), "subscribers.json"))
+
+PROJECT_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+DATA_DIR = os.getenv("DATA_DIR", os.path.join(PROJECT_ROOT, "data"))
+os.makedirs(DATA_DIR, exist_ok=True)
+
+SUBSCRIBERS_JSON = os.path.join(DATA_DIR, "subscribers.json")
 
 limiter = Limiter(key_func=get_remote_address)
 app = FastAPI(title="ZeroDay Weekly")

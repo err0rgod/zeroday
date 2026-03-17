@@ -3,7 +3,9 @@ import json
 from datetime import datetime
 from typing import List, Dict, Optional
 
-OUTPUT_DIR = os.path.join(os.path.dirname(os.path.dirname(__file__)), "..", "content_gen", "output")
+PROJECT_ROOT = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+DATA_DIR = os.getenv("DATA_DIR", os.path.join(PROJECT_ROOT, "data"))
+OUTPUT_DIR = os.path.join(DATA_DIR, "output")
 
 def get_issue_dates() -> List[str]:
     """Returns a sorted list of all available issue dates (YYYY-MM-DD), newest first."""

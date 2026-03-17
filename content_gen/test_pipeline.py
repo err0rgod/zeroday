@@ -10,7 +10,9 @@ def test_production_pipeline():
     from datetime import datetime
     import os
     
-    output_dir = os.path.join("output", datetime.today().strftime("%Y-%m-%d"))
+    PROJECT_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+    DATA_DIR = os.getenv("DATA_DIR", os.path.join(PROJECT_ROOT, "data"))
+    output_dir = os.path.join(DATA_DIR, "output", datetime.today().strftime("%Y-%m-%d"))
     os.makedirs(output_dir, exist_ok=True)
     
     # Check if real scraped data exists from v2.py

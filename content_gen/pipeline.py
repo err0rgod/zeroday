@@ -15,7 +15,9 @@ def generate_newsletter(json_data: dict, output_file: str = None):
     """
     if not output_file:
         from datetime import datetime
-        output_file = os.path.join("output", datetime.today().strftime("%Y-%m-%d"), "newsletter.txt")
+        PROJECT_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+        DATA_DIR = os.getenv("DATA_DIR", os.path.join(PROJECT_ROOT, "data"))
+        output_file = os.path.join(DATA_DIR, "output", datetime.today().strftime("%Y-%m-%d"), "newsletter.txt")
         
     # Ensure output directory exists before writing
     out_dir = os.path.dirname(output_file)
@@ -64,7 +66,9 @@ def process_scraped_json(file_path: str, output_path: str = None):
         
     if not output_path:
         from datetime import datetime
-        output_path = os.path.join("output", datetime.today().strftime("%Y-%m-%d"), "newsletter.json")
+        PROJECT_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+        DATA_DIR = os.getenv("DATA_DIR", os.path.join(PROJECT_ROOT, "data"))
+        output_path = os.path.join(DATA_DIR, "output", datetime.today().strftime("%Y-%m-%d"), "newsletter.json")
         
     out_dir = os.path.dirname(output_path)
     if out_dir:
