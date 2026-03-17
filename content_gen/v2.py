@@ -6,6 +6,9 @@ import json
 import logging
 from newspaper import Article
 
+
+
+
 logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s")
 
 NEWS_FEEDS = [
