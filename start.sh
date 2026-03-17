@@ -9,8 +9,10 @@ cd "$(dirname "$0")"
 source venv/bin/activate
 
 # Load env
-export $(grep -v '^#' .env | xargs)
-
+# export $(grep -v '^#' .env | xargs)
+set -a
+source .env
+set +a
 # Start app (no reload in production)
 nohup python -m uvicorn web.main:app --host 0.0.0.0 --port 8000 > app.log 2>&1 &
 
