@@ -26,6 +26,6 @@ pip install -r requirements.txt
 
 # --- Restart ---
 echo "🔁 Restarting app..."
-./start.sh
+chmod +x *.sh
 
 echo "✅ Update complete!"
