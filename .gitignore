@@ -1,9 +1,13 @@
+#temporary test files for windows, not to be committed
+start.bat
+
 # =========================
 # 🔐 ENV & SECRETS
 # =========================
 .env
 *.env
 .env.*
+
 
 # =========================
 # 🐍 PYTHON
