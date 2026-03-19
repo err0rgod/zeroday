@@ -7,7 +7,7 @@ import json
 import os
 import uuid
 from datetime import datetime, timedelta
-from lib.content import get_issue_dates, get_issue_data, get_latest_issue, search_articles, OUTPUT_DIR
+from zeroday.lib.content import get_issue_dates, get_issue_data, get_latest_issue, search_articles, OUTPUT_DIR
 from feedgen.feed import FeedGenerator
 import re
 
@@ -16,9 +16,9 @@ from slowapi.util import get_remote_address
 from slowapi.errors import RateLimitExceeded
 from sqlalchemy.orm import Session
 
-from lib.db import Base, engine, get_db, Subscriber, PageView, ReadSession, init_db
-from lib.validation import validate_and_normalize_email, validate_and_format_phone
-from lib.notifications import send_verification_email
+from zeroday.lib.db import Base, engine, get_db, Subscriber, PageView, ReadSession, init_db
+from zeroday.lib.validation import validate_and_normalize_email, validate_and_format_phone
+from zeroday.lib.notifications import send_verification_email
 
 # --- Constants ---
 TOKEN_EXPIRY_HOURS = 24
@@ -37,7 +37,7 @@ app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
 # Initialize DB
 init_db()
 
-templates = Jinja2Templates(directory="templates")
+templates = Jinja2Templates(directory=os.path.join(os.path.dirname(__file__), "templates"))
 
 # Make functions available to Jinja
 templates.env.globals.update(
@@ -46,7 +46,7 @@ templates.env.globals.update(
 )
 
 try:
-    app.mount("/static", StaticFiles(directory="static"), name="static")
+    app.mount("/static", StaticFiles(directory=os.path.join(os.path.dirname(__file__), "static")), name="static")
 except RuntimeError:
     pass
 
@@ -391,4 +391,4 @@ async def admin_panel(request: Request, db: Session = Depends(get_db)):
     })
 
 if __name__ == "__main__":
-    uvicorn.run("main:app", host="0.0.0.0", port=8000, reload=True)
+    uvicorn.run("zeroday.web.main:app", host="0.0.0.0", port=8000, reload=True)

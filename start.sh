@@ -44,11 +44,8 @@ fi
 NUM_WORKERS=4
 echo "⚙️  Starting Uvicorn with $NUM_WORKERS workers..."
 
-# Switch to web directory before running so python path and relative paths (templates, static) are correct
-cd "$PROJECT_DIR/web"
-
-# Run securely detached from the terminal session
-nohup python -m uvicorn main:app --host 0.0.0.0 --port 8000 --workers $NUM_WORKERS > "$LOG_DIR/app.log" 2>&1 &
+# Execute unconditionally from the project root and reference the app as a package module
+nohup python -m uvicorn zeroday.web.main:app --host 0.0.0.0 --port 8000 --workers $NUM_WORKERS > "$LOG_DIR/app.log" 2>&1 &
 APP_PID=$!
 echo $APP_PID > "$PROJECT_DIR/app.pid"
 # Prevent bash from killing background process on exit
