@@ -7,7 +7,7 @@ import json
 import os
 import uuid
 from datetime import datetime, timedelta
-from zeroday.lib.content import get_issue_dates, get_issue_data, get_latest_issue, search_articles, OUTPUT_DIR
+from lib.content import get_issue_dates, get_issue_data, get_latest_issue, search_articles, OUTPUT_DIR
 from feedgen.feed import FeedGenerator
 import re
 
@@ -16,9 +16,9 @@ from slowapi.util import get_remote_address
 from slowapi.errors import RateLimitExceeded
 from sqlalchemy.orm import Session
 
-from zeroday.lib.db import Base, engine, get_db, Subscriber, PageView, ReadSession, init_db
-from zeroday.lib.validation import validate_and_normalize_email, validate_and_format_phone
-from zeroday.lib.notifications import send_verification_email
+from lib.db import Base, engine, get_db, Subscriber, PageView, ReadSession, init_db
+from lib.validation import validate_and_normalize_email, validate_and_format_phone
+from lib.notifications import send_verification_email
 
 # --- Constants ---
 TOKEN_EXPIRY_HOURS = 24
@@ -391,4 +391,4 @@ async def admin_panel(request: Request, db: Session = Depends(get_db)):
     })
 
 if __name__ == "__main__":
-    uvicorn.run("zeroday.web.main:app", host="0.0.0.0", port=8000, reload=True)
+    uvicorn.run("web.main:app", host="0.0.0.0", port=8000, reload=True)
