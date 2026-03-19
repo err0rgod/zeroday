@@ -1,5 +1,5 @@
 #temporary test files for windows, not to be committed
-start.bat
+*.bat
 # =========================
 # 🔐 ENV & SECRETS
 # =========================
