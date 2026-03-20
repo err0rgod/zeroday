@@ -9,7 +9,7 @@ echo "🚀 Starting zero-downtime-ish update..."
 
 # --- Backup ---
 echo "📦 Creating backup..."
-BACKUP_DIR="${HOME}/backups/zeroday_$(date +%F_%T)"
+BACKUP_DIR="${HOME}/backups/zeroday_$(date +%F_%H-%M-%S)"
 mkdir -p "$BACKUP_DIR"
 
 # Backup everything except runtime directories (logs, venv, data db, .git)
@@ -32,7 +32,11 @@ echo "📦 Installing dependencies..."
 if [ ! -d "venv" ]; then
     python3 -m venv venv
 fi
-source venv/bin/activate
+if [ -f "venv/Scripts/activate" ]; then
+    source venv/Scripts/activate
+else
+    source venv/bin/activate
+fi
 pip install -r requirements.txt
 
 # --- Setup Permissions ---

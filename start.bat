@@ -10,7 +10,7 @@ echo.
 
 REM --- Web Server ---
 echo  [1/1] Starting Web Server on http://localhost:8000 ...
-start "ZeroDay Weekly - Web Server" cmd /k "cd /d %~dp0web && echo Web Server starting... && python -m uvicorn main:app --host 0.0.0.0 --port 8000 --reload"
+start "ZeroDay Weekly - Web Server" cmd /k "cd /d %~dp0 && echo Web Server starting... && python -m uvicorn web.main:app --host 0.0.0.0 --port 8000 --reload"
 
 timeout /t 2 /nobreak >nul
 
