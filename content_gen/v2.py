@@ -194,7 +194,7 @@ def main():
         try:
             import sys
             if PROJECT_ROOT not in sys.path:
-                sys.path.append(PROJECT_ROOT)
+                sys.path.insert(0, PROJECT_ROOT)
             
             from automation.send_newsletter import send_newsletters
             logging.info("Dispatching email newsletters...")

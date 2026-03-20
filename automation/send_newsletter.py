@@ -1,8 +1,8 @@
 import os
 import sys
 
-# Add project root to sys.path so we can import lib
-sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+# Add project root to sys.path at index 0 to avoid Linux 'lib' folder collisions
+sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 import resend
 from lib.db import SessionLocal, Subscriber

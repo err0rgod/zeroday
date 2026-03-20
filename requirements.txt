@@ -18,3 +18,4 @@ requests
 feedparser
 beautifulsoup4
 newspaper3k
+lxml_html_clean
