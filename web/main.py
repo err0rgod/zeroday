@@ -147,6 +147,21 @@ async def read_issue(request: Request, date_str: str):
         "date_str": date_str
     })
 
+@app.get("/weekly", response_class=HTMLResponse)
+async def read_weekly(request: Request):
+    dates = get_issue_dates()
+    if not dates:
+        raise HTTPException(status_code=404, detail="No weekly news found")
+        
+    date_str = dates[0]
+    data = get_issue_data(date_str)
+    
+    return templates.TemplateResponse("issue.html", {
+        "request": request,
+        "issue": data,
+        "date_str": date_str
+    })
+
 @app.get("/archive", response_class=HTMLResponse)
 async def read_archive(request: Request):
     dates = get_issue_dates()
