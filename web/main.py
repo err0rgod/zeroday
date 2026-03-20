@@ -2,6 +2,9 @@ import sys
 import os
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
+from dotenv import load_dotenv
+load_dotenv(os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), ".env"))
+
 from fastapi import FastAPI, Request, Form, HTTPException, Depends
 from fastapi.responses import HTMLResponse, RedirectResponse, Response, JSONResponse
 from fastapi.templating import Jinja2Templates
@@ -23,6 +26,19 @@ from sqlalchemy.orm import Session
 from lib.db import Base, engine, get_db, Subscriber, PageView, ReadSession, init_db
 from lib.validation import validate_and_normalize_email, validate_and_format_phone
 from lib.notifications import send_verification_email
+import secrets
+import uuid
+
+SESSION_TOKENS = set()
+
+class AuthException(Exception):
+    pass
+
+def get_current_admin(request: Request):
+    token = request.cookies.get("admin_session")
+    if not token or token not in SESSION_TOKENS:
+        raise AuthException()
+    return True
 
 # --- Constants ---
 TOKEN_EXPIRY_HOURS = 24
@@ -37,6 +53,10 @@ limiter = Limiter(key_func=get_remote_address)
 app = FastAPI(title="ZeroDay Weekly")
 app.state.limiter = limiter
 app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
+
+@app.exception_handler(AuthException)
+async def auth_exception_handler(request: Request, exc: AuthException):
+    return RedirectResponse(url="/login", status_code=302)
 
 # Initialize DB
 init_db()
@@ -386,12 +406,45 @@ async def track_time(req: TrackTimeReq, db: Session = Depends(get_db)):
     return {"success": True}
 
 # ======================================================================
-# Admin Panel
+# Admin Panel & Authentication
 # ======================================================================
 from sqlalchemy import func
 
+@app.get("/login", response_class=HTMLResponse)
+async def login_get(request: Request):
+    return templates.TemplateResponse("login.html", {"request": request})
+
+@app.post("/login", response_class=HTMLResponse)
+async def login_post(request: Request, username: str = Form(...), password: str = Form(...)):
+    # Using secrets.compare_digest to prevent timing attacks
+    correct_username = secrets.compare_digest(username, os.getenv("ADMIN_USERNAME", "admin"))
+    correct_password = secrets.compare_digest(password, os.getenv("ADMIN_PASSWORD", "secret"))
+    
+    if not (correct_username and correct_password):
+        return templates.TemplateResponse("login.html", {
+            "request": request,
+            "error_msg": "Invalid username or password."
+        }, status_code=401)
+        
+    # Generate random session token
+    token = uuid.uuid4().hex
+    SESSION_TOKENS.add(token)
+    
+    response = RedirectResponse(url="/lifeng", status_code=302)
+    response.set_cookie(key="admin_session", value=token, httponly=True, max_age=86400)
+    return response
+
+@app.get("/logout")
+async def logout(request: Request):
+    token = request.cookies.get("admin_session")
+    if token in SESSION_TOKENS:
+        SESSION_TOKENS.remove(token)
+    response = RedirectResponse(url="/login", status_code=302)
+    response.delete_cookie("admin_session")
+    return response
+
 @app.get("/lifeng", response_class=HTMLResponse)
-async def admin_panel(request: Request, db: Session = Depends(get_db)):
+async def admin_panel(request: Request, db: Session = Depends(get_db), admin: bool = Depends(get_current_admin)):
     # Calculate stats
     total_subscribers = db.query(Subscriber).filter(Subscriber.verified_email == True, Subscriber.is_active == True).count()
     total_views = db.query(PageView).count()
@@ -401,12 +454,21 @@ async def admin_panel(request: Request, db: Session = Depends(get_db)):
     
     recent_subscribers = db.query(Subscriber).order_by(Subscriber.created_at.desc()).limit(10).all()
     
+    # Analytics Features
+    top_pages_query = db.query(PageView.path, func.count(PageView.id).label('views')).group_by(PageView.path).order_by(func.count(PageView.id).desc()).limit(5).all()
+    top_pages = [{"path": p.path, "views": p.views} for p in top_pages_query]
+    
+    engaging_pages_query = db.query(ReadSession.path, func.avg(ReadSession.duration_seconds).label('avg_time')).group_by(ReadSession.path).order_by(func.avg(ReadSession.duration_seconds).desc()).limit(5).all()
+    engaging_pages = [{"path": p.path, "avg_time": round(p.avg_time)} for p in engaging_pages_query]
+    
     return templates.TemplateResponse("lifeng.html", {
         "request": request,
         "total_subscribers": total_subscribers,
         "total_views": total_views,
         "avg_read_time": avg_read_time,
-        "recent_subscribers": recent_subscribers
+        "recent_subscribers": recent_subscribers,
+        "top_pages": top_pages,
+        "engaging_pages": engaging_pages
     })
 
 if __name__ == "__main__":
