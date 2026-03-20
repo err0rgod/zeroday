@@ -141,6 +141,9 @@ def _generate_tokens() -> dict:
 
 @app.get("/", response_class=HTMLResponse)
 async def read_root(request: Request):
+    if request.cookies.get("is_subscribed") == "true":
+        return RedirectResponse(url="/weekly", status_code=302)
+        
     latest_date = None
     dates = get_issue_dates()
     if dates:
@@ -237,10 +240,12 @@ async def subscribe(
 
     if existing:
         if existing.verified_email and existing.is_active:
-            return JSONResponse(
+            response = JSONResponse(
                 content={"success": False, "error": "This email is already subscribed."},
                 status_code=400
             )
+            response.set_cookie("is_subscribed", "true", max_age=31536000) # 1 year
+            return response
         # Re-subscribe: regenerate tokens if expired
         subscriber = existing
         if _is_token_expired(subscriber.verification_token_created_at):
@@ -312,7 +317,9 @@ async def verify_email(token: str, db: Session = Depends(get_db)):
     # Redirect to the latest issue, or home if none published yet
     dates = get_issue_dates()
     redirect_url = f"/issue/{dates[0]}" if dates else "/"
-    return RedirectResponse(url=redirect_url, status_code=302)
+    response = RedirectResponse(url=redirect_url, status_code=302)
+    response.set_cookie("is_subscribed", "true", max_age=31536000) # 1 year
+    return response
 
 
 # ======================================================================
