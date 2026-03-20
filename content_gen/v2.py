@@ -189,6 +189,20 @@ def main():
         processed_file = os.path.join(output_dir, "newsletter_prepared_data.json")
         process_scraped_json(raw_output_file, processed_file)
         logging.info(f"AI Pipeline completed successfully. Output saved to {processed_file}.")
+        
+        # Trigger email automation
+        try:
+            import sys
+            if PROJECT_ROOT not in sys.path:
+                sys.path.append(PROJECT_ROOT)
+            
+            from automation.send_newsletter import send_newsletters
+            logging.info("Dispatching email newsletters...")
+            send_newsletters()
+            logging.info("Email dispatch process completed.")
+        except Exception as e:
+            logging.error(f"Failed to launch email automation: {e}")
+            
     except ImportError:
         logging.error("pipeline.py not found. Skipping AI processing.")
     except Exception as e:
