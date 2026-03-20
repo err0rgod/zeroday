@@ -26,51 +26,60 @@ def send_newsletters():
     for idx, story in enumerate(top_stories[:3], 1):
         story_html += f"""
         <tr>
-            <td style="padding-bottom: 24px;">
-                <h3 style="margin: 0 0 8px 0; font-size: 18px; color: #f1f5f9;">{idx}. {story.get('title', '')}</h3>
-                <p style="margin: 0; font-size: 15px; color: #cbd5e1; line-height: 1.6;">{story.get('short_summary', '')}</p>
+            <td style="padding: 24px 0; border-bottom: 1px solid #f1f5f9;">
+                <h3 style="margin: 0 0 8px 0; font-size: 18px; color: #0f172a; font-weight: 600;">{idx}. {story.get('title', '')}</h3>
+                <p style="margin: 0; font-size: 15px; color: #475569; line-height: 1.6;">{story.get('short_summary', '')}</p>
             </td>
         </tr>
         """
         
     base_html = f"""<!DOCTYPE html>
 <html lang="en">
-<body style="margin:0;padding:0;background-color:#0f172a;font-family:'Segoe UI',Helvetica,Arial,sans-serif;">
-  <table width="100%" cellpadding="0" cellspacing="0" style="background-color:#0f172a;padding:40px 0;">
+<body style="margin:0;padding:0;background-color:#f8fafc;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;">
+  <table width="100%" cellpadding="0" cellspacing="0" style="background-color:#f8fafc;padding:40px 0;">
     <tr>
       <td align="center">
-        <table width="600" cellpadding="0" cellspacing="0" style="background:#1e293b;border-radius:12px;overflow:hidden;border:1px solid #334155;">
+        <!-- Main Card -->
+        <table width="600" cellpadding="0" cellspacing="0" style="background:#ffffff;border-radius:12px;overflow:hidden;border:1px solid #e2e8f0;box-shadow:0 4px 6px -1px rgba(0,0,0,0.05);">
+          
+          <!-- Header -->
           <tr>
-            <td style="background:linear-gradient(135deg,#1e3a5f 0%,#0f172a 100%);padding:36px 40px;text-align:center;">
-              <div style="display:inline-block;background:#3b82f6;border-radius:8px;padding:6px 14px;margin-bottom:16px;">
-                <span style="color:#fff;font-size:13px;font-weight:700;letter-spacing:2px;text-transform:uppercase;">ZeroDay Weekly</span>
+            <td style="background:#ffffff;padding:48px 40px 24px;text-align:center;border-bottom:1px solid #f1f5f9;">
+              <div style="display:inline-block;background:#f3e8ff;border-radius:6px;padding:6px 14px;margin-bottom:16px;">
+                <span style="color:#7e22ce;font-size:12px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;">ZeroDay Weekly</span>
               </div>
-              <h1 style="color:#f1f5f9;font-size:26px;font-weight:700;margin:0;line-height:1.3;">
-                Issue for {date_str} is out!
+              <h1 style="color:#0f172a;font-size:26px;font-weight:700;margin:0;line-height:1.3;letter-spacing:-0.5px;">
+                Issue for {date_str}
               </h1>
             </td>
           </tr>
+          <!-- Body -->
           <tr>
-            <td style="padding:36px 40px;">
-              <p style="color:#94a3b8;font-size:15px;line-height:1.7;margin:0 0 28px;">
-                Here's a preview of the top cybersecurity stories this week:
+            <td style="padding:16px 40px 48px;">
+              <p style="color:#64748b;font-size:16px;line-height:1.6;margin:0 0 32px;text-align:center;">
+                Here are the top cybersecurity stories for this week.
               </p>
-              <table width="100%" cellpadding="0" cellspacing="0">
+              
+              <table width="100%" cellpadding="0" cellspacing="0" style="margin-bottom: 32px;">
                 {story_html}
               </table>
-              <table cellpadding="0" cellspacing="0" style="margin:16px auto 32px;">
+              
+              <!-- CTA Button -->
+              <table cellpadding="0" cellspacing="0" style="margin:0 auto;">
                 <tr>
-                  <td align="center" style="border-radius:8px;background:linear-gradient(135deg,#3b82f6,#6366f1);">
-                    <a href="{BASE_URL}/weekly" style="display:inline-block;padding:14px 36px;color:#ffffff;font-size:15px;font-weight:700;text-decoration:none;border-radius:8px;letter-spacing:0.3px;">Read Full Issue</a>
+                  <td align="center" style="border-radius:8px;background:linear-gradient(135deg,#8b5cf6,#6366f1);box-shadow:0 4px 14px 0 rgba(139,92,246,0.39);">
+                    <a href="{BASE_URL}/weekly" style="display:inline-block;padding:14px 32px;color:#ffffff;font-size:15px;font-weight:600;text-decoration:none;border-radius:8px;letter-spacing:0.3px;">Explore Full Issue</a>
                   </td>
                 </tr>
               </table>
             </td>
           </tr>
+          
+          <!-- Footer -->
           <tr>
-            <td style="background:#0f172a;padding:24px 40px;border-top:1px solid #1e293b;text-align:center;">
-              <p style="color:#64748b;font-size:12px;margin:0 0 12px;">ZeroDay Weekly &bull; Cybersecurity intelligence, weekly.</p>
-              <p style="margin:0;"><a href="{{{{unsubscribe_url}}}}" style="color:#ef4444;font-size:12px;text-decoration:none;">Unsubscribe</a></p>
+            <td style="background:#f8fafc;padding:32px 40px;border-top:1px solid #e2e8f0;text-align:center;">
+              <p style="color:#94a3b8;font-size:13px;margin:0 0 12px;">ZeroDay Weekly &bull; Cybersecurity intelligence.</p>
+              <p style="margin:0;"><a href="{{{{unsubscribe_url}}}}" style="color:#cbd5e1;font-size:12px;text-decoration:underline;">Unsubscribe</a></p>
             </td>
           </tr>
         </table>
