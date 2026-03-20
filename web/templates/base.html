@@ -23,13 +23,14 @@
                     },
                     colors: {
                         dark: {
-                            900: '#0f172a', /* slate-900 */
-                            800: '#1e293b', /* slate-800 */
-                            700: '#334155',
+                            900: '#0a0a0f', /* ultra-dark slate/indigo */
+                            800: '#13131a', /* slightly lighter */
+                            700: '#1f1f2e',
                         },
                         brand: {
-                            500: '#3b82f6', /* blue-500 */
-                            400: '#60a5fa', /* blue-400 */
+                            500: '#8b5cf6', /* violet-500 */
+                            400: '#a78bfa', /* violet-400 */
+                            300: '#c4b5fd', /* violet-300 */
                         }
                     }
                 }
@@ -41,9 +42,10 @@
     <style>
         body {
             font-family: 'Inter', sans-serif;
-            background-color: #0f172a;
+            background-color: #0a0a0f;
             color: #f8fafc;
             -webkit-font-smoothing: antialiased;
+            letter-spacing: -0.01em;
         }
         
         .smooth-shadow {
@@ -71,13 +73,13 @@
             top: 0;
             left: 0;
             width: 100%;
-            height: 4px;
+            height: 3px;
             background: transparent;
             z-index: 50;
         }
         #progress-bar {
             height: 100%;
-            background: linear-gradient(to right, #3b82f6, #8b5cf6);
+            background: linear-gradient(to right, #8b5cf6, #3b82f6);
             width: 0%;
             transition: width 0.1s ease;
         }
@@ -92,10 +94,10 @@
         <div class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
             <div class="flex items-center justify-between h-16">
                 <!-- Logo -->
-                <div class="flex-shrink-0">
+                <div class="flex-shrink-0 py-2">
                     <a href="/" class="flex items-center gap-3">
-                        <img src="/static/logo.png" alt="ZeroDay Weekly Logo" class="w-10 h-10 object-contain rounded-md" onerror="this.src='data:image/svg+xml;utf8,<svg xmlns=\'http://www.w3.org/2000/svg\' width=\'40\' height=\'40\'><rect width=\'40\' height=\'40\' fill=\'#3b82f6\'/><text x=\'50%\' y=\'50%\' font-family=\'sans-serif\' font-size=\'16\' fill=\'white\' text-anchor=\'middle\' dy=\'.3em\'>ZW</text></svg>'">
-                        <span class="font-bold text-xl tracking-tight">ZeroDay <span class="text-brand-400">Weekly</span></span>
+                        <img src="/static/logo.png" alt="ZeroDay Weekly Logo" class="w-9 h-9 object-contain rounded-md" onerror="this.src='data:image/svg+xml;utf8,<svg xmlns=\'http://www.w3.org/2000/svg\' width=\'40\' height=\'40\'><rect width=\'40\' height=\'40\' rx=\'8\' fill=\'#8b5cf6\'/><text x=\'50%\' y=\'50%\' font-family=\'sans-serif\' font-size=\'15\' font-weight=\'bold\' fill=\'white\' text-anchor=\'middle\' dy=\'.35em\'>ZW</text></svg>'">
+                        <span class="font-bold text-xl tracking-tight">ZeroDay <span class="bg-gradient-to-r from-violet-400 to-indigo-400 bg-clip-text text-transparent">Weekly</span></span>
                     </a>
                 </div>
                 
