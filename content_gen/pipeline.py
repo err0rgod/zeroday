@@ -1,6 +1,11 @@
 import json
 import os
 import logging
+from dotenv import load_dotenv
+
+project_root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+load_dotenv(os.path.join(project_root, ".env"))
+
 from summarizer import summarize_article, generate_two_level_summary
 from categorizer import categorize_article
 from utils import is_duplicate_title, rank_article

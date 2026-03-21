@@ -23,7 +23,11 @@ def categorize_article(title: str, summary: str) -> str:
         "General Security"
     ]
     
-    client = Groq()
+    api_key = os.getenv("GROQ_API_KEY")
+    if not api_key:
+        raise ValueError("GROQ_API_KEY is not set in the environment or .env file.")
+        
+    client = Groq(api_key=api_key)
     prompt = f"""
     Categorize the following cybersecurity article based on its title and summary.
     You must choose EXACTLY ONE category from the list below:

@@ -9,12 +9,13 @@ from utils import compress_content, rate_limit_and_retry
 _env_path = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), ".env")
 load_dotenv(_env_path)
 
-@rate_limit_and_retry(max_retries=3, base_delay=2.0)
+@rate_limit_and_retry(max_retries=3, base_delay=6.0)
 def summarize_article(title: str, content: str) -> str:
     """
     Summarizes a cybersecurity news article using the Groq API.
     """
-    client = Groq()
+    api_key = os.getenv("GROQ_API_KEY")
+    client = Groq(api_key=api_key)
     compressed = compress_content(content)
     
     prompt = f"""
@@ -38,11 +39,11 @@ def summarize_article(title: str, content: str) -> str:
         ],
         model="llama-3.3-70b-versatile",
         temperature=0.3,
-        max_tokens=500
+        max_tokens=700
     )
     return response.choices[0].message.content.strip()
 
-@rate_limit_and_retry(max_retries=3, base_delay=2.0)
+@rate_limit_and_retry(max_retries=3, base_delay=6.0)
 def generate_two_level_summary(title: str, content: str) -> dict:
     """
     Generates a TWO-LEVEL summary for important news:
@@ -51,7 +52,8 @@ def generate_two_level_summary(title: str, content: str) -> dict:
     
     Returns a dictionary with 'short_summary' and 'deep_summary'.
     """
-    client = Groq()
+    api_key = os.getenv("GROQ_API_KEY")
+    client = Groq(api_key=api_key)
     compressed = compress_content(content)
     
     prompt = f"""
