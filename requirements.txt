@@ -12,7 +12,7 @@ passlib
 bcrypt
 resend
 python-dotenv
-groq
+openai
 python-dotenv
 requests
 feedparser

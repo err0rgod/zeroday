@@ -1,5 +1,5 @@
 import os
-from groq import Groq
+from openai import OpenAI
 from dotenv import load_dotenv
 from utils import rate_limit_and_retry
 
@@ -23,11 +23,11 @@ def categorize_article(title: str, summary: str) -> str:
         "General Security"
     ]
     
-    api_key = os.getenv("GROQ_API_KEY", "").strip()
+    api_key = os.getenv("CEREBRAS_API_KEY", "").strip()
     if not api_key:
-        raise ValueError("GROQ_API_KEY is not set in the environment or .env file.")
+        raise ValueError("CEREBRAS_API_KEY is not set in the environment or .env file.")
         
-    client = Groq(api_key=api_key)
+    client = OpenAI(base_url="https://api.cerebras.ai/v1", api_key=api_key)
     prompt = f"""
     Categorize the following cybersecurity article based on its title and summary.
     You must choose EXACTLY ONE category from the list below:
@@ -44,7 +44,7 @@ def categorize_article(title: str, summary: str) -> str:
             {"role": "system", "content": "You are a strict categorization system. Output exactly one category name."},
             {"role": "user", "content": prompt}
         ],
-        model="llama-3.3-70b-versatile",
+        model="llama3.3-70b",
         temperature=0.1,
         max_tokens=15
     )

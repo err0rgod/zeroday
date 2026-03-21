@@ -1,6 +1,6 @@
 import os
 import json
-from groq import Groq
+from openai import OpenAI
 from dotenv import load_dotenv
 
 from utils import compress_content, rate_limit_and_retry
@@ -14,8 +14,10 @@ def summarize_article(title: str, content: str) -> str:
     """
     Summarizes a cybersecurity news article using the Groq API.
     """
-    api_key = os.getenv("GROQ_API_KEY", "").strip()
-    client = Groq(api_key=api_key)
+    api_key = os.getenv("CEREBRAS_API_KEY", "").strip()
+    if not api_key:
+        raise ValueError("CEREBRAS_API_KEY is missing or empty.")
+    client = OpenAI(base_url="https://api.cerebras.ai/v1", api_key=api_key)
     compressed = compress_content(content)
     
     prompt = f"""
@@ -37,7 +39,7 @@ def summarize_article(title: str, content: str) -> str:
             {"role": "system", "content": "You are a helpful cybersecurity assistant."},
             {"role": "user", "content": prompt}
         ],
-        model="llama-3.3-70b-versatile",
+        model="llama3.3-70b",
         temperature=0.3,
         max_tokens=700
     )
@@ -52,8 +54,10 @@ def generate_two_level_summary(title: str, content: str) -> dict:
     
     Returns a dictionary with 'short_summary' and 'deep_summary'.
     """
-    api_key = os.getenv("GROQ_API_KEY", "").strip()
-    client = Groq(api_key=api_key)
+    api_key = os.getenv("CEREBRAS_API_KEY", "").strip()
+    if not api_key:
+        raise ValueError("CEREBRAS_API_KEY is missing or empty.")
+    client = OpenAI(base_url="https://api.cerebras.ai/v1", api_key=api_key)
     compressed = compress_content(content)
     
     prompt = f"""
@@ -85,7 +89,7 @@ def generate_two_level_summary(title: str, content: str) -> dict:
             {"role": "system", "content": "You are a professional cybersecurity technical writer."},
             {"role": "user", "content": prompt}
         ],
-        model="llama-3.3-70b-versatile",
+        model="llama3.3-70b",
         temperature=0.2, # Extremely strict for predictable layout mapping
         max_tokens=1000
     )
