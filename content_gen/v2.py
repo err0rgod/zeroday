@@ -15,7 +15,7 @@ NEWS_FEEDS = [
     "https://feeds.feedburner.com/TheHackersNews",
     "https://www.bleepingcomputer.com/feed/",
     "https://krebsonsecurity.com/feed/",
-    "https://www.darkreading.com/rss.xml",
+    # "https://www.darkreading.com/rss.xml",
     "https://blog.cloudflare.com/rss/",
     "https://googleprojectzero.blogspot.com/feeds/posts/default?alt=rss"
 ]
@@ -111,49 +111,48 @@ def scrape_cves(max_items=10):
         "sortOrder": "desc"
     }
 
-    try:
+    for attempt in range(3):
+        try:
+            response = requests.get(NVD_API, headers=get_headers(), params=params, timeout=20)
+            response.raise_for_status()
+            data = response.json()
 
-        response = requests.get(NVD_API, headers=get_headers(), params=params, timeout=20)
+            cves = []
+            for vuln in data.get("vulnerabilities", []):
+                cve = vuln["cve"]
+                cve_id = cve["id"]
+                
+                descriptions = cve.get("descriptions", [])
+                description = ""
+                for d in descriptions:
+                    if d["lang"] == "en":
+                        description = d["value"]
+                        break
 
-        data = response.json()
+                severity = "Unknown"
+                metrics = cve.get("metrics", {})
+                if "cvssMetricV31" in metrics:
+                    cvss = metrics["cvssMetricV31"][0]["cvssData"]
+                    severity = f'{cvss["baseScore"]} ({cvss["baseSeverity"]})'
 
-        cves = []
+                cves.append({
+                    "cve_id": cve_id,
+                    "description": description,
+                    "severity": severity,
+                    "published_date": cve.get("published", "")
+                })
 
-        for vuln in data.get("vulnerabilities", []):
-
-            cve = vuln["cve"]
-
-            cve_id = cve["id"]
-
-            descriptions = cve.get("descriptions", [])
-
-            description = ""
-
-            for d in descriptions:
-                if d["lang"] == "en":
-                    description = d["value"]
-                    break
-
-            severity = "Unknown"
-
-            metrics = cve.get("metrics", {})
-
-            if "cvssMetricV31" in metrics:
-                cvss = metrics["cvssMetricV31"][0]["cvssData"]
-                severity = f'{cvss["baseScore"]} ({cvss["baseSeverity"]})'
-
-            cves.append({
-                "cve_id": cve_id,
-                "description": description,
-                "severity": severity,
-                "published_date": cve.get("published", "")
-            })
-
-        return cves
-
-    except Exception as e:
-        logging.error("CVE scraping failed")
-        return []
+            return cves
+            
+        except requests.exceptions.HTTPError as http_err:
+            logging.warning(f"CVE scraping HTTP error on attempt {attempt + 1}: {http_err}")
+            time.sleep(5)
+        except Exception as e:
+            logging.warning(f"CVE scraping general error on attempt {attempt + 1}: {e}")
+            time.sleep(5)
+            
+    logging.error("All CVE scraping attempts failed after 3 retries.")
+    return []
 
 
 def main():
@@ -203,8 +202,9 @@ def main():
         except Exception as e:
             logging.error(f"Failed to launch email automation: {e}")
             
-    except ImportError:
-        logging.error("pipeline.py not found. Skipping AI processing.")
+    except ImportError as e:
+        logging.error(f"Failed to load AI pipeline modules: {e}")
+        logging.error("Ensure 'pipeline.py', 'summarizer.py', and 'categorizer.py' exist and are imported correctly.")
     except Exception as e:
         logging.error(f"Error during AI pipeline processing: {e}")
 
