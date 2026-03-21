@@ -4,7 +4,7 @@ import logging
 from dotenv import load_dotenv
 
 project_root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-load_dotenv(os.path.join(project_root, ".env"))
+load_dotenv(os.path.join(project_root, ".env"), override=True)
 
 from summarizer import summarize_article, generate_two_level_summary
 from categorizer import categorize_article

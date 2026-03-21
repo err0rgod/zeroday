@@ -4,7 +4,7 @@ from dotenv import load_dotenv
 
 # Load environment variables from the root directory's .env
 _env_path = os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))), ".env")
-load_dotenv(_env_path)
+load_dotenv(_env_path, override=True)
 
 resend.api_key = os.getenv("RESEND_API_KEY", "")
 BASE_URL = os.getenv("BASE_URL", "http://localhost:8000").rstrip("/")

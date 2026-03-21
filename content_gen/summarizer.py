@@ -7,14 +7,14 @@ from utils import compress_content, rate_limit_and_retry
 
 # Load environment variables from the root directory's .env
 _env_path = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), ".env")
-load_dotenv(_env_path)
+load_dotenv(_env_path, override=True)
 
 @rate_limit_and_retry(max_retries=3, base_delay=6.0)
 def summarize_article(title: str, content: str) -> str:
     """
     Summarizes a cybersecurity news article using the Groq API.
     """
-    api_key = os.getenv("GROQ_API_KEY")
+    api_key = os.getenv("GROQ_API_KEY", "").strip()
     client = Groq(api_key=api_key)
     compressed = compress_content(content)
     
@@ -52,7 +52,7 @@ def generate_two_level_summary(title: str, content: str) -> dict:
     
     Returns a dictionary with 'short_summary' and 'deep_summary'.
     """
-    api_key = os.getenv("GROQ_API_KEY")
+    api_key = os.getenv("GROQ_API_KEY", "").strip()
     client = Groq(api_key=api_key)
     compressed = compress_content(content)
     

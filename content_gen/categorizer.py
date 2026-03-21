@@ -5,7 +5,7 @@ from utils import rate_limit_and_retry
 
 # Load environment variables from the root directory's .env
 _env_path = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), ".env")
-load_dotenv(_env_path)
+load_dotenv(_env_path, override=True)
 
 @rate_limit_and_retry(max_retries=3, base_delay=2.0)
 def categorize_article(title: str, summary: str) -> str:
@@ -23,7 +23,7 @@ def categorize_article(title: str, summary: str) -> str:
         "General Security"
     ]
     
-    api_key = os.getenv("GROQ_API_KEY")
+    api_key = os.getenv("GROQ_API_KEY", "").strip()
     if not api_key:
         raise ValueError("GROQ_API_KEY is not set in the environment or .env file.")
         
