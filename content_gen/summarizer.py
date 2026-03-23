@@ -39,7 +39,7 @@ def summarize_article(title: str, content: str) -> str:
             {"role": "system", "content": "You are a helpful cybersecurity assistant."},
             {"role": "user", "content": prompt}
         ],
-        model="llama3.3-70b",
+        model="llama3.1-8b",
         temperature=0.3,
         max_tokens=700
     )
@@ -89,7 +89,7 @@ def generate_two_level_summary(title: str, content: str) -> dict:
             {"role": "system", "content": "You are a professional cybersecurity technical writer."},
             {"role": "user", "content": prompt}
         ],
-        model="llama3.3-70b",
+        model="llama3.1-8b",
         temperature=0.2, # Extremely strict for predictable layout mapping
         max_tokens=1000
     )

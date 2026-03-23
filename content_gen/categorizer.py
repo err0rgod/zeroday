@@ -44,7 +44,7 @@ def categorize_article(title: str, summary: str) -> str:
             {"role": "system", "content": "You are a strict categorization system. Output exactly one category name."},
             {"role": "user", "content": prompt}
         ],
-        model="llama3.3-70b",
+        model="llama3.1-8b",
         temperature=0.1,
         max_tokens=15
     )
