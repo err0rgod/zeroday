@@ -17,7 +17,7 @@
             <svg class="w-4 h-4 transform group-hover:-translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path></svg>
             Back to Archive
         </a>
-        <h1 class="text-4xl md:text-5xl lg:text-6xl font-extrabold tracking-tight mb-4">
+        <h1 class="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-extrabold tracking-tight mb-4">
             Weekly Digest
         </h1>
         <div class="flex items-center justify-center gap-3 text-slate-400 font-medium">
@@ -61,7 +61,7 @@
                 </span>
                 {% endif %}
                 
-                <div class="prose prose-invert max-w-none text-slate-300">
+                <div class="prose prose-sm sm:prose-base md:prose-lg prose-invert max-w-none text-slate-300">
                     <p class="font-medium text-slate-200 text-lg leading-relaxed mb-4">{{ story.short_summary }}</p>
                     <p class="text-slate-400 leading-relaxed">{{ story.deep_summary }}</p>
                 </div>
@@ -129,8 +129,8 @@
             <input type="email" id="issue_email" name="email" required placeholder="name@company.com" 
                    class="w-full bg-dark-900 border border-slate-700 rounded-lg px-4 py-2 text-slate-200 focus:outline-none focus:ring-2 focus:ring-brand-500 transition-all">
             
-            <div class="flex gap-2">
-                <select id="issue-country-code" name="country_code" class="bg-dark-900 border border-slate-700 rounded-lg px-2 py-2 text-slate-200 focus:outline-none focus:ring-2 focus:ring-brand-500 transition-all text-sm w-28 mt-1">
+            <div class="flex flex-col sm:flex-row gap-2 sm:gap-3">
+                <select id="issue-country-code" name="country_code" class="bg-dark-900 border border-slate-700 rounded-lg px-2 py-2 text-slate-200 focus:outline-none focus:ring-2 focus:ring-brand-500 transition-all text-sm w-full sm:w-32 mt-1">
                     <option value="+91" selected>IN +91</option>
                     <option value="+1">US +1</option>
                     <option value="+44">UK +44</option>
