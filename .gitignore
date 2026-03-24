@@ -60,7 +60,7 @@ htmlcov/
 # =========================
 # 🌐 SCRAPER / OUTPUT FILES
 # =========================
-output/
+# output/
 downloads/
 scraped_data/
 temp/
