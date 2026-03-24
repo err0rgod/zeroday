@@ -48,9 +48,9 @@ htmlcov/
 # =========================
 # 🗃️ DATABASE / LOCAL FILES
 # =========================
-*.db
-*.sqlite3
-data/
+# *.db
+# *.sqlite3
+# data/
 
 # =========================
 # 🪵 LOGS
