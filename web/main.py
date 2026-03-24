@@ -151,7 +151,7 @@ async def read_root(request: Request):
         
     latest_issue = get_latest_issue()
     
-    return templates.TemplateResponse("index.html", {
+    return templates.TemplateResponse(request, "index.html", {
         "request": request,
         "latest_issue": latest_issue,
         "latest_date": latest_date,
@@ -164,7 +164,7 @@ async def read_issue(request: Request, date_str: str):
     if not data:
         raise HTTPException(status_code=404, detail="Issue not found")
         
-    return templates.TemplateResponse("issue.html", {
+    return templates.TemplateResponse(request, "issue.html", {
         "request": request,
         "issue": data,
         "date_str": date_str
@@ -179,7 +179,7 @@ async def read_weekly(request: Request):
     date_str = dates[0]
     data = get_issue_data(date_str)
     
-    return templates.TemplateResponse("issue.html", {
+    return templates.TemplateResponse(request, "issue.html", {
         "request": request,
         "issue": data,
         "date_str": date_str
@@ -190,7 +190,7 @@ async def read_archive(request: Request):
     dates = get_issue_dates()
     issues = [{"date": d, "data": get_issue_data(d)} for d in dates]
     
-    return templates.TemplateResponse("archive.html", {
+    return templates.TemplateResponse(request, "archive.html", {
         "request": request,
         "issues": issues
     })
@@ -199,7 +199,7 @@ async def read_archive(request: Request):
 async def read_search(request: Request, q: str = ""):
     results = search_articles(q) if q else []
     
-    return templates.TemplateResponse("search.html", {
+    return templates.TemplateResponse(request, "search.html", {
         "request": request,
         "query": q,
         "results": results
@@ -419,7 +419,7 @@ from sqlalchemy import func
 
 @app.get("/login", response_class=HTMLResponse)
 async def login_get(request: Request):
-    return templates.TemplateResponse("login.html", {"request": request})
+    return templates.TemplateResponse(request, "login.html", {"request": request})
 
 @app.post("/login", response_class=HTMLResponse)
 async def login_post(request: Request, username: str = Form(...), password: str = Form(...)):
@@ -428,7 +428,7 @@ async def login_post(request: Request, username: str = Form(...), password: str 
     correct_password = secrets.compare_digest(password, os.getenv("ADMIN_PASSWORD", "secret"))
     
     if not (correct_username and correct_password):
-        return templates.TemplateResponse("login.html", {
+        return templates.TemplateResponse(request, "login.html", {
             "request": request,
             "error_msg": "Invalid username or password."
         }, status_code=401)
@@ -468,7 +468,7 @@ async def admin_panel(request: Request, db: Session = Depends(get_db), admin: bo
     engaging_pages_query = db.query(ReadSession.path, func.avg(ReadSession.duration_seconds).label('avg_time')).group_by(ReadSession.path).order_by(func.avg(ReadSession.duration_seconds).desc()).limit(5).all()
     engaging_pages = [{"path": p.path, "avg_time": round(p.avg_time)} for p in engaging_pages_query]
     
-    return templates.TemplateResponse("lifeng.html", {
+    return templates.TemplateResponse(request, "lifeng.html", {
         "request": request,
         "total_subscribers": total_subscribers,
         "total_views": total_views,
