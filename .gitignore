@@ -64,6 +64,8 @@ htmlcov/
 downloads/
 scraped_data/
 temp/
+scraper/
+content_gen/
 
 # =========================
 # 🐳 DOCKER (optional)

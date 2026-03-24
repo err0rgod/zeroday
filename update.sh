@@ -27,17 +27,9 @@ git fetch origin
 git reset --hard origin/main
 git clean -fd
 
-# --- Reinstall deps ---
-echo "📦 Installing dependencies..."
-if [ ! -d "venv" ]; then
-    python3 -m venv venv
-fi
-if [ -f "venv/Scripts/activate" ]; then
-    source venv/Scripts/activate
-else
-    source venv/bin/activate
-fi
-pip install -r requirements.txt
+# --- Remove stale containers ---
+echo "📦 Pruning old images if necessary..."
+docker image prune -f
 
 # --- Setup Permissions ---
 echo "🔒 Fixing permissions..."

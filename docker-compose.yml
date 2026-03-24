@@ -1,0 +1,27 @@
+version: '3.8'
+
+services:
+  web:
+    build:
+      context: ./web
+    ports:
+      - "8000:8000"
+    env_file:
+      - .env
+    environment:
+      - ENVIRONMENT=development
+    volumes:
+      # Optional: mount local code for hot reloading during dev
+      - ./web:/app
+    # The application code handles fetching data from Azure Blob Storage
+
+  scraper:
+    build:
+      context: ./scraper
+    env_file:
+      - .env
+    environment:
+      - ENVIRONMENT=development
+    # Runs once and exits. Use `docker-compose up scraper` to run it manually.
+    profiles:
+      - manual

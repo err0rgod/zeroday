@@ -1,6 +1,0 @@
-groq
-python-dotenv
-requests
-feedparser
-beautifulsoup4
-newspaper3k

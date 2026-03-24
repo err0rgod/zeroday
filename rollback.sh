@@ -34,9 +34,7 @@ echo "📂 Restoring files from backup..."
 # Deletes files that were added since the backup, absolutely excludes runtime stuff including db
 rsync -a --delete --exclude={'venv','logs','data','.git'} "$LATEST_BACKUP/" "$PROJECT_DIR/"
 
-echo "📦 Re-installing dependencies..."
-source venv/bin/activate
-pip install -r requirements.txt
+# Dependencies are handled securely by docker-compose up --build in start.sh
 
 echo "🔒 Fixing permissions..."
 chmod +x *.sh

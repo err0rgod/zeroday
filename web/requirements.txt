@@ -12,3 +12,4 @@ passlib
 bcrypt
 resend
 python-dotenv
+azure-storage-blob
