@@ -108,3 +108,27 @@ def send_verification_email(email: str, token: str) -> bool:
     except Exception as exc:
         print(f"[EMAIL ERROR] Failed to send to {email}: {exc}")
         return False
+
+def send_custom_email(emails: list[str], subject: str, html_body: str) -> bool:
+    """
+    Broadcasts a custom email to a list of recipients via Resend API.
+    Bcc is used to protect subscriber privacy.
+    Returns True on success, False on failure.
+    """
+    if not emails:
+        return False
+        
+    try:
+        params: resend.Emails.SendParams = {
+            "from": FROM_EMAIL,
+            "to": ["undisclosed-recipients@zeroday.news"], # Use a generic 'to' 
+            "bcc": emails, # Hide all recipient emails using BCC
+            "subject": subject,
+            "html": html_body,
+        }
+        resend.Emails.send(params)
+        print(f"[EMAIL] Successfully broadcasted custom email to {len(emails)} subscribers.")
+        return True
+    except Exception as exc:
+        print(f"[EMAIL ERROR] Failed to broadcast custom email: {exc}")
+        return False

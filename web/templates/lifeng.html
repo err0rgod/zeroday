@@ -128,6 +128,51 @@
         </div>
     </div>
 
+    <!-- Email Composer Section -->
+    <div class="bg-dark-800 border border-slate-700 rounded-xl overflow-hidden smooth-shadow mb-12">
+        <div class="px-6 py-5 border-b border-slate-700 bg-dark-900/50 flex justify-between items-center">
+            <h2 class="text-lg font-semibold text-brand-400">Broadcast Custom Email</h2>
+            <span class="text-xs text-slate-400 bg-dark-900 px-3 py-1 rounded-full border border-slate-700">Sends to {{ total_subscribers }} Active Subscribers</span>
+        </div>
+        
+        <form action="/admin/send-email" method="POST" class="p-6">
+            {% if request.query_params.get('msg') == 'sent' %}
+            <div class="mb-6 bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 px-4 py-3 rounded-lg text-sm flex items-center gap-2">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+                Email successfully broadcasted to all active subscribers.
+            </div>
+            {% elif request.query_params.get('error') %}
+            <div class="mb-6 bg-red-500/10 border border-red-500/20 text-red-400 px-4 py-3 rounded-lg text-sm flex items-center gap-2">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                Failed to send email. Check server logs.
+            </div>
+            {% endif %}
+
+            <div class="mb-4">
+                <label for="subject" class="block text-sm font-medium text-slate-300 mb-1">Subject</label>
+                <input type="text" name="subject" id="subject" required 
+                       class="w-full bg-dark-900 border border-slate-700 rounded-lg px-4 py-2.5 text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-transparent transition-all shadow-inner-dark"
+                       placeholder="Emergency Alert: New Zero-Day Vulnerability Detected">
+            </div>
+            
+            <div class="mb-6">
+                <label for="body" class="block text-sm font-medium text-slate-300 mb-1">HTML Body</label>
+                <textarea name="body" id="body" required rows="6"
+                          class="w-full bg-dark-900 border border-slate-700 rounded-lg px-4 py-3 text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-transparent transition-all shadow-inner-dark font-mono text-sm leading-relaxed"
+                          placeholder="<h1>Alert</h1><p>We have detected a new vulnerability...</p>"></textarea>
+                <p class="text-xs text-slate-500 mt-2">You can use standard HTML tags for formatting.</p>
+            </div>
+            
+            <div class="flex justify-end">
+                <button type="submit" 
+                        class="bg-brand-600 hover:bg-brand-700 text-white font-medium py-2.5 px-6 rounded-lg transition-all transform hover:-translate-y-0.5 shadow-lg shadow-brand-500/20 flex items-center gap-2">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"/></svg>
+                    Broadcast to {{ total_subscribers }} Subscribers
+                </button>
+            </div>
+        </form>
+    </div>
+
     <!-- Recent Subscribers Table -->
     <div class="bg-dark-800 border border-slate-700 rounded-xl overflow-hidden smooth-shadow">
         <div class="px-6 py-5 border-b border-slate-700 bg-dark-900/50 flex justify-between items-center">

@@ -25,7 +25,7 @@ from sqlalchemy.orm import Session
 
 from lib.db import Base, engine, get_db, Subscriber, PageView, ReadSession, init_db
 from lib.validation import validate_and_normalize_email, validate_and_format_phone
-from lib.notifications import send_verification_email
+from lib.notifications import send_verification_email, send_custom_email
 import secrets
 import uuid
 
@@ -477,6 +477,33 @@ async def admin_panel(request: Request, db: Session = Depends(get_db), admin: bo
         "top_pages": top_pages,
         "engaging_pages": engaging_pages
     })
+
+@app.post("/admin/send-email", response_class=RedirectResponse)
+async def admin_send_email(
+    request: Request,
+    subject: str = Form(...),
+    body: str = Form(...),
+    db: Session = Depends(get_db),
+    admin: bool = Depends(get_current_admin)
+):
+    try:
+        # Fetch all active and verified subscribers
+        subscribers = db.query(Subscriber).filter(Subscriber.verified_email == True, Subscriber.is_active == True).all()
+        emails = [sub.email for sub in subscribers]
+        
+        if not emails:
+            return RedirectResponse(url="/lifeng?error=no_subscribers", status_code=302)
+            
+        success = send_custom_email(emails, subject, body)
+        
+        if success:
+            return RedirectResponse(url="/lifeng?msg=sent", status_code=302)
+        else:
+            return RedirectResponse(url="/lifeng?error=send_failed", status_code=302)
+            
+    except Exception as e:
+        print(f"Error sending custom email: {e}")
+        return RedirectResponse(url="/lifeng?error=exception", status_code=302)
 
 if __name__ == "__main__":
     uvicorn.run("web.main:app", host="0.0.0.0", port=8000, reload=True)
