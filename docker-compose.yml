@@ -15,13 +15,4 @@ services:
       - ./web:/app
     # The application code handles fetching data from Azure Blob Storage
 
-  scraper:
-    build:
-      context: ./scraper
-    env_file:
-      - .env
-    environment:
-      - ENVIRONMENT=development
-    # Runs once and exits. Use `docker-compose up scraper` to run it manually.
-    profiles:
-      - manual
+
