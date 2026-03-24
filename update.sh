@@ -25,7 +25,7 @@ echo "🛑 Stopping current application..."
 echo "⬇️ Pulling latest code..."
 git fetch origin
 git reset --hard origin/main
-git clean -fd
+git clean -fd -e data/
 
 # --- Remove stale containers ---
 echo "📦 Pruning old images if necessary..."
