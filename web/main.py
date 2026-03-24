@@ -498,6 +498,22 @@ async def admin_panel(request: Request, db: Session = Depends(get_db), admin: bo
         "engaging_pages": engaging_pages
     })
 
+@app.post("/admin/delete-subscriber/{subscriber_id}", response_class=RedirectResponse)
+async def admin_delete_subscriber(
+    request: Request,
+    subscriber_id: int,
+    db: Session = Depends(get_db),
+    admin: bool = Depends(get_current_admin)
+):
+    subscriber = db.query(Subscriber).filter(Subscriber.id == subscriber_id).first()
+    if subscriber:
+        db.delete(subscriber)
+        db.commit()
+        # Sync deletion to JSON backup
+        remaining = db.query(Subscriber).all()
+        _save_json_subscribers([{"email": s.email, "phone": s.phone or "", "created_at": s.created_at.isoformat()} for s in remaining])
+    return RedirectResponse(url="/lifeng?msg=deleted", status_code=302)
+
 @app.post("/admin/send-email", response_class=RedirectResponse)
 async def admin_send_email(
     request: Request,
