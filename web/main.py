@@ -94,9 +94,29 @@ def _load_json_subscribers() -> list:
 
 
 def _save_json_subscribers(data: list):
-    """Write subscribers list to JSON file with UTF-8 BOM for Windows compatibility."""
+    """Write subscribers list to JSON file with UTF-8 BOM for Windows compatibility, and upload to Azure."""
     with open(SUBSCRIBERS_JSON, "w", encoding="utf-8-sig") as f:
         json.dump(data, f, indent=4, ensure_ascii=False)
+        
+    # Redundant Cloud Backup
+    conn_str = os.getenv("AZURE_STORAGE_CONNECTION_STRING")
+    container_name = os.getenv("AZURE_CONTAINER_NAME", "news")
+    if conn_str:
+        try:
+            from azure.storage.blob import BlobServiceClient
+            blob_service = BlobServiceClient.from_connection_string(conn_str)
+            container_client = blob_service.get_container_client(container_name)
+            
+            # Ensure container exists
+            if not container_client.exists():
+                container_client.create_container()
+                
+            blob_client = container_client.get_blob_client("subscribers_backup.json")
+            # Upload formatted JSON natively to Blob Storage
+            blob_client.upload_blob(json.dumps(data, indent=4, ensure_ascii=False).encode('utf-8-sig'), overwrite=True)
+            print("📦 [BACKUP] Successfully uploaded subscribers payload to Azure Blob Storage.")
+        except Exception as e:
+            print(f"❌ [BACKUP ERROR] Failed to push subscribers to Azure: {e}")
 
 
 def _mirror_to_json(email: str, phone: str):
