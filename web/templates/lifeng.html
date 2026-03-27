@@ -191,7 +191,6 @@
                 <thead>
                     <tr class="bg-dark-900/30 text-slate-400 text-xs uppercase tracking-wider">
                         <th class="px-6 py-4 font-medium">Email</th>
-                        <th class="px-6 py-4 font-medium">Phone</th>
                         <th class="px-6 py-4 font-medium">Status</th>
                         <th class="px-6 py-4 font-medium text-right">Joined</th>
                         <th class="px-6 py-4 font-medium text-right">Action</th>
@@ -202,9 +201,6 @@
                     <tr class="hover:bg-slate-800/30 transition-colors">
                         <td class="px-6 py-4 whitespace-nowrap">
                             <div class="text-sm font-medium text-slate-200">{{ sub.email }}</div>
-                        </td>
-                        <td class="px-6 py-4 whitespace-nowrap">
-                            <div class="text-sm text-slate-400">{{ sub.phone or "—" }}</div>
                         </td>
                         <td class="px-6 py-4 whitespace-nowrap">
                             {% if sub.verified_email and sub.is_active %}
@@ -222,10 +218,11 @@
                             {% endif %}
                         </td>
                         <td class="px-6 py-4 whitespace-nowrap text-right text-sm text-slate-500">
-                            {{ sub.created_at.strftime('%Y-%m-%d %H:%M') }}
+                            {{ sub.created_at[:16] | replace('T', ' ') if sub.created_at else '—' }}
                         </td>
                         <td class="px-6 py-4 whitespace-nowrap text-right">
-                            <form method="POST" action="/admin/delete-subscriber/{{ sub.id }}" onsubmit="return confirm('Delete {{ sub.email }}? This cannot be undone.')">
+                            <form method="POST" action="/admin/delete-subscriber" onsubmit="return confirm('Delete {{ sub.email }}? This cannot be undone.')">
+                                <input type="hidden" name="email" value="{{ sub.email }}">
                                 <button type="submit" class="inline-flex items-center gap-1 px-2.5 py-1 rounded text-xs font-medium text-red-400 border border-red-500/20 bg-red-500/10 hover:bg-red-500/20 transition-colors">
                                     <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
                                     Delete
@@ -235,7 +232,7 @@
                     </tr>
                     {% else %}
                     <tr>
-                        <td colspan="5" class="px-6 py-12 text-center text-slate-500">
+                        <td colspan="4" class="px-6 py-12 text-center text-slate-500">
                             <p>No subscribers found.</p>
                         </td>
                     </tr>

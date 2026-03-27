@@ -5,7 +5,6 @@ python-multipart
 python-dateutil
 feedgen
 email-validator
-phonenumbers
 slowapi
 sqlalchemy
 passlib
@@ -13,9 +12,9 @@ bcrypt
 resend
 python-dotenv
 openai
-python-dotenv
 requests
 feedparser
 beautifulsoup4
 newspaper3k
 lxml_html_clean
+azure-storage-blob

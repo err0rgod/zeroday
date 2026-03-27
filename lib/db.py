@@ -20,21 +20,8 @@ SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 
 Base = declarative_base()
 
-class Subscriber(Base):
-    __tablename__ = "subscribers"
+# Base = declarative_base() # Moved up or kept as is
 
-    id = Column(Integer, primary_key=True, index=True)
-    email = Column(String, unique=True, index=True)
-    phone = Column(String, index=True, nullable=True)
-    
-    verified_email = Column(Boolean, default=False)
-    is_active = Column(Boolean, default=True)
-    
-    verification_token = Column(String, index=True, nullable=True)
-    verification_token_created_at = Column(DateTime, nullable=True)
-    unsubscribe_token = Column(String, index=True, nullable=True)
-    
-    created_at = Column(DateTime, default=datetime.datetime.utcnow)
 
 class PageView(Base):
     __tablename__ = "page_views"
