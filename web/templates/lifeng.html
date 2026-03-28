@@ -205,6 +205,45 @@
         </div>
     </div>
 
+    <!-- Issue Archive -->
+    <div class="bg-dark-800 border border-slate-700 rounded-xl overflow-hidden smooth-shadow mb-12">
+        <div class="px-6 py-4 border-b border-slate-700 bg-dark-900/50 flex justify-between items-center">
+            <h2 class="text-md font-semibold text-white">Issue <span class="text-brand-400">Archive</span></h2>
+            <div class="flex items-center gap-2">
+                <span class="text-xs text-slate-400 bg-dark-900 px-3 py-1 rounded-full border border-slate-700">{{ all_issues | length }} Published</span>
+            </div>
+        </div>
+        <div class="overflow-x-auto max-h-[400px] overflow-y-auto custom-scrollbar">
+            <table class="w-full text-left border-collapse">
+                <thead class="sticky top-0 z-10">
+                    <tr class="bg-dark-900 text-slate-500 text-xs uppercase tracking-wider">
+                        <th class="px-6 py-3 font-medium">Issue Date</th>
+                        <th class="px-6 py-3 font-medium">Status</th>
+                        <th class="px-6 py-3 font-medium text-right">View Link</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-slate-700/50">
+                    {% for issue_date in all_issues %}
+                    <tr class="hover:bg-slate-800/30 transition-colors">
+                        <td class="px-6 py-3 whitespace-nowrap text-sm text-slate-200 font-medium">{{ issue_date }}</td>
+                        <td class="px-6 py-3 whitespace-nowrap text-xs">
+                            <span class="inline-flex items-center px-2 py-0.5 rounded bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">Published</span>
+                        </td>
+                        <td class="px-6 py-3 whitespace-nowrap text-right text-sm">
+                            <a href="/issue/{{ issue_date }}" target="_blank" class="text-brand-400 hover:text-brand-300 flex items-center gap-1 justify-end">
+                                <span>Preview</span>
+                                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/></svg>
+                            </a>
+                        </td>
+                    </tr>
+                    {% else %}
+                    <tr><td colspan="3" class="px-6 py-12 text-center text-sm text-slate-500">No issues found in storage.</td></tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
     <!-- Email Composer Section -->
     <div class="bg-dark-800 border border-slate-700 rounded-xl overflow-hidden smooth-shadow mb-12">
         <div class="px-6 py-5 border-b border-slate-700 bg-dark-900/50 flex justify-between items-center">

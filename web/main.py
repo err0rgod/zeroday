@@ -418,6 +418,9 @@ async def admin_panel(request: Request, db: Session = Depends(get_db), admin: bo
 
     # System Health Checks
     health = get_system_health(db)
+    
+    # Issues List
+    all_issues = get_issue_dates()
 
     return templates.TemplateResponse(request, "lifeng.html", {
         "request": request,
@@ -428,6 +431,7 @@ async def admin_panel(request: Request, db: Session = Depends(get_db), admin: bo
         "top_pages": top_pages,
         "engaging_pages": engaging_pages,
         "health": health,
+        "all_issues": all_issues,
     })
 
 @app.post("/admin/delete-subscriber", response_class=RedirectResponse)
