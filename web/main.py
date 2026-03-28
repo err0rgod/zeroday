@@ -30,6 +30,7 @@ from lib.blob_store import (
     get_subscriber, get_subscriber_by_token,
     get_active_verified_emails, count_active_verified, get_recent_subscribers,
 )
+from lib.health import get_system_health
 import secrets
 import uuid
 
@@ -415,6 +416,9 @@ async def admin_panel(request: Request, db: Session = Depends(get_db), admin: bo
     engaging_pages_query = db.query(ReadSession.path, func.avg(ReadSession.duration_seconds).label('avg_time')).group_by(ReadSession.path).order_by(func.avg(ReadSession.duration_seconds).desc()).limit(5).all()
     engaging_pages = [{"path": p.path, "avg_time": round(p.avg_time)} for p in engaging_pages_query]
 
+    # System Health Checks
+    health = get_system_health(db)
+
     return templates.TemplateResponse(request, "lifeng.html", {
         "request": request,
         "total_subscribers": total_subscribers,
@@ -423,6 +427,7 @@ async def admin_panel(request: Request, db: Session = Depends(get_db), admin: bo
         "recent_subscribers": recent_subscribers,
         "top_pages": top_pages,
         "engaging_pages": engaging_pages,
+        "health": health,
     })
 
 @app.post("/admin/delete-subscriber", response_class=RedirectResponse)
