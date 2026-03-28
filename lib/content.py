@@ -1,31 +1,39 @@
 import os
 import json
+import time
 from datetime import datetime
 from typing import List, Dict, Optional
+from dotenv import load_dotenv
 
+# Load .env from project root
 PROJECT_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+_env_path = os.path.join(PROJECT_ROOT, ".env")
+load_dotenv(_env_path, override=True)
+
 DATA_DIR = os.getenv("DATA_DIR", os.path.join(PROJECT_ROOT, "data"))
 OUTPUT_DIR = os.path.join(DATA_DIR, "output")
 
-# Simple in-memory cache with 10-minute TTL
+# Simple in-memory cache with 60-second TTL
 _blob_cache = {
     "dates": None,
     "issues": {},
     "last_checked": 0
 }
 
-import time
-CACHE_TTL = 600 # 10 minutes
+CACHE_TTL = 60 # Refresh every minute
 
 def _get_blob_service():
     conn_str = os.getenv("AZURE_STORAGE_CONNECTION_STRING")
-    if not conn_str: return None, None
+    if not conn_str:
+        print("[CONTENT] Warning: AZURE_STORAGE_CONNECTION_STRING not found in env.")
+        return None, None
     try:
         from azure.storage.blob import BlobServiceClient
         service = BlobServiceClient.from_connection_string(conn_str)
         container = os.getenv("AZURE_CONTAINER_NAME", "news")
         return service, container
-    except Exception:
+    except Exception as e:
+        print(f"[CONTENT] Error initializing Azure service: {e}")
         return None, None
 
 def get_issue_dates() -> List[str]:

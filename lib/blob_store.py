@@ -8,6 +8,7 @@ _env_path = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file_
 load_dotenv(_env_path, override=True)
 
 BLOB_NAME = "subscribers.json"
+BACKUP_BLOB_NAME = "subscribers_backup.json"
 
 
 def _get_blob_client():
@@ -22,6 +23,20 @@ def _get_blob_client():
     if not container_client.exists():
         container_client.create_container()
     return container_client.get_blob_client(BLOB_NAME)
+
+
+def _get_backup_blob_client():
+    """Return a BlobClient for the subscribers_backup.json blob."""
+    conn_str = os.getenv("AZURE_STORAGE_CONNECTION_STRING")
+    container_name = os.getenv("AZURE_CONTAINER_NAME", "news")
+    if not conn_str:
+        raise RuntimeError("AZURE_STORAGE_CONNECTION_STRING is not set.")
+    from azure.storage.blob import BlobServiceClient
+    blob_service = BlobServiceClient.from_connection_string(conn_str)
+    container_client = blob_service.get_container_client(container_name)
+    if not container_client.exists():
+        container_client.create_container()
+    return container_client.get_blob_client(BACKUP_BLOB_NAME)
 
 
 def load_subscribers() -> list:
@@ -54,6 +69,33 @@ def save_subscribers(data: list) -> bool:
     except Exception as e:
         print(f"[BLOB] save_subscribers error: {e}")
         return False
+
+
+def _append_to_backup(email: str):
+    """
+    Append an email to the backup list if not already present.
+    Never removes any entries.
+    """
+    try:
+        blob_client = _get_backup_blob_client()
+        data = []
+        try:
+            raw = blob_client.download_blob().readall().decode("utf-8-sig")
+            data = json.loads(raw)
+        except Exception:
+            pass  # Likely blob doesn't exist yet
+
+        if not isinstance(data, list):
+            data = []
+
+        email_lower = email.lower()
+        if email_lower not in [e.lower() for e in data if isinstance(e, str)]:
+            data.append(email_lower)
+            payload = json.dumps(data, indent=2, ensure_ascii=False).encode("utf-8-sig")
+            blob_client.upload_blob(payload, overwrite=True)
+            print(f"[BLOB] Added {email} to backup archive.")
+    except Exception as e:
+        print(f"[BLOB] _append_to_backup error: {e}")
 
 
 def get_subscriber(email: str) -> Optional[dict]:
@@ -95,6 +137,8 @@ def add_subscriber(email: str, verification_token: str, unsubscribe_token: str,
         "unsubscribe_token": unsubscribe_token,
         "created_at": created_at,
     })
+    # Also save to append-only backup
+    _append_to_backup(email)
     return save_subscribers(subscribers)
 
 
@@ -112,6 +156,8 @@ def update_subscriber(email: str, **kwargs) -> bool:
             break
     if not found:
         return False
+    # Ensure they are in the append-only archive
+    _append_to_backup(email)
     return save_subscribers(subscribers)
 
 
