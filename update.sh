@@ -11,9 +11,6 @@ echo "🚀 Starting zero-downtime-ish update..."
 echo "📦 Creating backup..."
 BACKUP_DIR="${HOME}/backups/zeroday_$(date +%F_%H-%M-%S)"
 mkdir -p "$BACKUP_DIR"
-
-# Backup everything except runtime directories (logs, venv, data db, .git)
-# Using rsync to accurately mirror the current working directory safely
 rsync -a --exclude={'venv','logs','data','.git'} "$PROJECT_DIR/" "$BACKUP_DIR/"
 echo "✅ Backup created at $BACKUP_DIR"
 
@@ -27,8 +24,8 @@ git fetch origin
 git reset --hard origin/main
 git clean -fd -e data/
 
-# --- Remove stale containers ---
-echo "📦 Pruning old images if necessary..."
+# --- Image Pruning ---
+echo "📦 Pruning old images to save space..."
 docker image prune -f
 
 # --- Setup Permissions ---
@@ -36,7 +33,7 @@ echo "🔒 Fixing permissions..."
 chmod +x *.sh
 
 # --- Restart ---
-echo "🔁 Restarting app..."
+echo "🔁 Restarting app with fresh build..."
 ./start.sh
 
 echo "✅ Update complete!"

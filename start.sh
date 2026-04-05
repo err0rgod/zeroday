@@ -7,6 +7,6 @@ PROJECT_DIR=$(pwd)
 
 echo "🚀 Starting ZeroDay server via Docker from $PROJECT_DIR..."
 
-docker-compose up -d --build web
+docker-compose up -d --build --remove-orphans
 
 echo "✅ Server started via Docker."

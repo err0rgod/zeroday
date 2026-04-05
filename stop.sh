@@ -3,10 +3,10 @@
 set -e
 
 cd "$(dirname "$0")"
-PROJECT_DIR=$(pwd)
 
-echo "🛑 Stopping ZeroDay server via Docker and destroying stale containers..."
+echo "🛑 Stopping ZeroDay containers..."
 
-docker-compose down
+# Stop and remove containers, networks, and orphans
+docker-compose down --remove-orphans
 
-echo "✅ Server gracefully stopped and containers removed."
+echo "✅ Server stopped."

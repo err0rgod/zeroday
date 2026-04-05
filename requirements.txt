@@ -1,13 +1,10 @@
-fastapi
-uvicorn
-jinja2
-python-multipart
+Flask
 python-dateutil
 feedgen
 email-validator
-slowapi
+Flask-Limiter
 sqlalchemy
-passlib
+PyJWT
 bcrypt
 resend
 python-dotenv

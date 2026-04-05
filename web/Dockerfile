@@ -9,4 +9,4 @@ RUN pip install --no-cache-dir azure-storage-blob
 
 COPY . .
 
-CMD ["python", "web/main.py"]
+CMD ["gunicorn", "--bind", "0.0.0.0:8000", "--workers", "3", "--timeout", "120", "web.main:app"]
