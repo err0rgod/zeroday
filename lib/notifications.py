@@ -8,7 +8,7 @@ load_dotenv(_env_path, override=True)
 
 resend.api_key = os.getenv("RESEND_API_KEY", "")
 BASE_URL = os.getenv("BASE_URL", "http://localhost:8000").rstrip("/")
-FROM_EMAIL = os.getenv("FROM_EMAIL", "ZeroDay Weekly <onboarding@resend.dev>")
+FROM_EMAIL = os.getenv("FROM_EMAIL", "ZeroDaily <onboarding@resend.dev>")
 
 
 def send_verification_email(email: str, token: str) -> bool:
@@ -23,7 +23,7 @@ def send_verification_email(email: str, token: str) -> bool:
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Verify your ZeroDay Weekly subscription</title>
+  <title>Verify your ZeroDaily subscription</title>
 </head>
 <body style="margin:0;padding:0;background-color:#0f172a;font-family:'Segoe UI',Helvetica,Arial,sans-serif;">
   <table width="100%" cellpadding="0" cellspacing="0" style="background-color:#0f172a;padding:40px 0;">
@@ -35,7 +35,7 @@ def send_verification_email(email: str, token: str) -> bool:
           <tr>
             <td style="background:linear-gradient(135deg,#1e3a5f 0%,#0f172a 100%);padding:36px 40px;text-align:center;">
               <div style="display:inline-block;background:#3b82f6;border-radius:8px;padding:6px 14px;margin-bottom:16px;">
-                <span style="color:#fff;font-size:13px;font-weight:700;letter-spacing:2px;text-transform:uppercase;">ZeroDay Weekly</span>
+                <span style="color:#fff;font-size:13px;font-weight:700;letter-spacing:2px;text-transform:uppercase;">ZeroDaily</span>
               </div>
               <h1 style="color:#f1f5f9;font-size:26px;font-weight:700;margin:0;line-height:1.3;">
                 Confirm your subscription
@@ -50,7 +50,7 @@ def send_verification_email(email: str, token: str) -> bool:
                 Hey there
               </p>
               <p style="color:#cbd5e1;font-size:15px;line-height:1.7;margin:0 0 28px;">
-                You're one click away from joining <strong style="color:#f1f5f9;">ZeroDay Weekly</strong> — your curated digest of the latest
+                You're one click away from joining <strong style="color:#f1f5f9;">ZeroDaily</strong> — your curated digest of the latest
                 cybersecurity news, CVEs, and threat intelligence, delivered straight to your inbox every week.
               </p>
 
@@ -83,7 +83,7 @@ def send_verification_email(email: str, token: str) -> bool:
           <tr>
             <td style="background:#0f172a;padding:24px 40px;border-top:1px solid #1e293b;text-align:center;">
               <p style="color:#334155;font-size:12px;margin:0;">
-                ZeroDay Weekly &bull; Cybersecurity intelligence, weekly.
+                ZeroDaily &bull; Cybersecurity intelligence, weekly.
               </p>
             </td>
           </tr>
@@ -99,7 +99,7 @@ def send_verification_email(email: str, token: str) -> bool:
         params: resend.Emails.SendParams = {
             "from": FROM_EMAIL,
             "to": [email],
-            "subject": " Verify your ZeroDay Weekly subscription",
+            "subject": " Verify your ZeroDaily subscription",
             "html": html_body,
         }
         response = resend.Emails.send(params)
@@ -121,7 +121,7 @@ def send_custom_email(emails: list[str], subject: str, html_body: str) -> bool:
     try:
         params: resend.Emails.SendParams = {
             "from": FROM_EMAIL,
-            "to": ["undisclosed-recipients@zeroday.news"], # Use a generic 'to' 
+            "to": ["undisclosed-recipients@zerodaily.news"], # Use a generic 'to' 
             "bcc": emails, # Hide all recipient emails using BCC
             "subject": subject,
             "html": html_body,

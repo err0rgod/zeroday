@@ -250,7 +250,7 @@ def unsubscribe():
         <html>
             <body style="background:#0f172a; color:#fff; font-family:sans-serif; text-align:center; padding-top:50px;">
                 <h1>Unsubscribed</h1>
-                <p>You have been removed from ZeroDay Weekly. Sorry to see you go.</p>
+                <p>You have been removed from ZeroDaily. Sorry to see you go.</p>
                 <p style="color:#94a3b8; margin-top:20px;">Changed your mind? <a href="/" style="color:#3b82f6;">Re-subscribe here</a>.</p>
             </body>
         </html>
@@ -259,7 +259,7 @@ def unsubscribe():
 @app.route("/rss.xml")
 def get_rss():
     fg = FeedGenerator()
-    fg.title("ZeroDay Weekly")
+    fg.title("ZeroDaily")
     fg.link(href=request.url_root, rel="alternate")
     fg.description("Weekly insights on cybersecurity news, vulnerabilities, and research.")
     fg.language("en")
