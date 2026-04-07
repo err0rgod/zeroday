@@ -207,6 +207,13 @@ def verify_email():
     if not subscriber:
         return "<h1>Invalid or expired verification token.</h1>", 400
 
+    if subscriber.get("verified_email") and subscriber.get("is_active", True):
+        dates = get_issue_dates()
+        redirect_url = url_for("read_issue", date_str=dates[0]) if dates else url_for("read_root")
+        response = make_response(redirect(redirect_url))
+        response.set_cookie("is_subscribed", "true", max_age=31536000)
+        return response
+
     if _is_token_expired(subscriber.get("verification_token_created_at", "")):
         return '''
             <html>
@@ -222,7 +229,6 @@ def verify_email():
         subscriber["email"],
         verified_email=True,
         is_active=True,
-        verification_token=None,
     )
 
     dates = get_issue_dates()
