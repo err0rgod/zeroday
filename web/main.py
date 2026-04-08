@@ -285,6 +285,56 @@ def get_rss():
 
     return Response(fg.rss_str(pretty=True), mimetype='application/xml')
 
+@app.route("/sitemap.xml")
+def sitemap():
+    base_url = request.url_root.rstrip('/')
+    urls = [
+        {"loc": f"{base_url}/", "changefreq": "daily", "priority": "1.0"},
+        {"loc": f"{base_url}/weekly", "changefreq": "daily", "priority": "0.9"},
+        {"loc": f"{base_url}/archive", "changefreq": "weekly", "priority": "0.8"},
+        {"loc": f"{base_url}/rss.xml", "changefreq": "weekly", "priority": "0.3"},
+    ]
+
+    for date_str in get_issue_dates():
+        urls.append({
+            "loc": f"{base_url}/issue/{date_str}",
+            "lastmod": date_str,
+            "changefreq": "weekly",
+            "priority": "0.7",
+        })
+
+    sitemap_items = []
+    for item in urls:
+        sitemap_entries = [f"<loc>{item['loc']}</loc>"]
+        if item.get("lastmod"):
+            sitemap_entries.append(f"<lastmod>{item['lastmod']}</lastmod>")
+        sitemap_entries.append(f"<changefreq>{item['changefreq']}</changefreq>")
+        sitemap_entries.append(f"<priority>{item['priority']}</priority>")
+        sitemap_items.append("".join(["<url>", *sitemap_entries, "</url>"]))
+
+    sitemap_xml = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"
+    sitemap_xml += "<urlset xmlns=\"http://www.sitemaps.org/schemas/sitemap/0.9\">\n"
+    sitemap_xml += "\n".join(sitemap_items)
+    sitemap_xml += "\n</urlset>"
+
+    return Response(sitemap_xml, mimetype='application/xml')
+
+@app.route("/robots.txt")
+def robots_txt():
+    sitemap_url = url_for('sitemap', _external=True)
+    robots_lines = [
+        "User-agent: *",
+        "Disallow: /lifeng",
+        "Disallow: /login",
+        "Disallow: /admin",
+        "Disallow: /api/track/view",
+        "Disallow: /api/track/time",
+        "Allow: /",
+        "",
+        f"Sitemap: {sitemap_url}",
+    ]
+    return Response("\n".join(robots_lines), mimetype='text/plain')
+
 # ======================================================================
 # Tracking API
 # ======================================================================

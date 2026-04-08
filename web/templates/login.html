@@ -2,6 +2,11 @@
 
 {% block title %}Admin Login | ZeroDaily{% endblock %}
 
+{% block head_extra %}
+    <meta name="robots" content="noindex, nofollow">
+    <meta name="description" content="Secure admin login for the ZeroDaily dashboard. Page is intentionally excluded from search indexing.">
+{% endblock %}
+
 {% block content %}
 <div class="min-h-[70vh] flex flex-col justify-center items-center px-4 sm:px-6 lg:px-8">
     <div class="w-full max-w-md bg-dark-800 border border-slate-700 rounded-xl p-8 smooth-shadow overflow-hidden relative">
