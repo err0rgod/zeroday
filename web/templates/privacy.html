@@ -1,0 +1,22 @@
+{% extends "base.html" %}
+
+{% block title %}Privacy Policy{% endblock %}
+
+{% block content %}
+<div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
+    <h1 class="text-3xl sm:text-4xl font-bold mb-6">Privacy Policy</h1>
+    
+    <div class="prose dark:prose-invert max-w-none text-gray-700 dark:text-gray-300">
+        <p class="mb-4">Last updated: {{ range(2025, 2027)|random }}-01-01</p>
+        
+        <h2 class="text-2xl font-bold mt-8 mb-4">Information Collection</h2>
+        <p class="mb-4">We collect your email address when you subscribe to our newsletter. We use this exclusively to send you our daily cybersecurity digest.</p>
+        
+        <h2 class="text-2xl font-bold mt-8 mb-4">Tracking & Analytics</h2>
+        <p class="mb-4">We use basic, privacy-focused tracking to understand which articles are most engaging. We do not sell your personal data.</p>
+        
+        <h2 class="text-2xl font-bold mt-8 mb-4">Data Retention</h2>
+        <p class="mb-4">You may unsubscribe at any time, which will permanently remove your email address from our active mailing list.</p>
+    </div>
+</div>
+{% endblock %}

@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{% block title %}ZeroDaily{% endblock %}</title>
-    <meta name="description" content="Weekly insights on cybersecurity news, vulnerabilities, and research.">
+    <meta name="description" content="Daily insights on cybersecurity news, vulnerabilities, and research.">
     {% block head_extra %}{% endblock %}
     
     <!-- Google Fonts: Inter -->
@@ -94,7 +94,7 @@
                 <!-- Links (Desktop) -->
                 <div class="hidden md:flex items-center gap-6">
                     <a href="/" class="text-sm font-medium text-gray-600 dark:text-gray-400 hover:text-black dark:hover:text-white transition-colors">Home</a>
-                    <a href="/weekly" class="text-sm font-medium text-gray-600 dark:text-gray-400 hover:text-black dark:hover:text-white transition-colors">Weekly News</a>
+                    <a href="/daily" class="text-sm font-medium text-gray-600 dark:text-gray-400 hover:text-black dark:hover:text-white transition-colors">Daily News</a>
                     <a href="/archive" class="text-sm font-medium text-gray-600 dark:text-gray-400 hover:text-black dark:hover:text-white transition-colors">Archive</a>
                     
                     <form action="/search" method="GET" class="relative">
@@ -138,7 +138,7 @@
                     </button>
                 </form>
                 <a href="/" class="block text-base font-medium text-gray-600 dark:text-gray-300 hover:text-black dark:hover:text-white hover:bg-gray-100 dark:hover:bg-gray-800 px-3 py-2 rounded-md transition-colors">Home</a>
-                <a href="/weekly" class="block text-base font-medium text-gray-600 dark:text-gray-300 hover:text-black dark:hover:text-white hover:bg-gray-100 dark:hover:bg-gray-800 px-3 py-2 rounded-md transition-colors">Weekly News</a>
+                <a href="/daily" class="block text-base font-medium text-gray-600 dark:text-gray-300 hover:text-black dark:hover:text-white hover:bg-gray-100 dark:hover:bg-gray-800 px-3 py-2 rounded-md transition-colors">Daily News</a>
                 <a href="/archive" class="block text-base font-medium text-gray-600 dark:text-gray-300 hover:text-black dark:hover:text-white hover:bg-gray-100 dark:hover:bg-gray-800 px-3 py-2 rounded-md transition-colors">Archive</a>
                 <a href="/rss.xml" class="block text-base font-medium text-gray-400 hover:text-orange-400 hover:bg-gray-100 dark:hover:bg-gray-800 px-3 py-2 rounded-md transition-colors flex items-center gap-2">
                     <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24"><path d="M6.18 15.64a2.18 2.18 0 0 1 2.18 2.18C8.36 19 7.38 20 6.18 20C5 20 4 19 4 17.82a2.18 2.18 0 0 1 2.18-2.18M4 4.08V8.1a9.92 9.92 0 0 1 9.92 9.92h4.03A13.95 13.95 0 0 0 4 4.08m0 5.88v4.03A4.04 4.04 0 0 1 8.04 18h4.04A8.08 8.08 0 0 0 4 9.96z"/></svg>
@@ -163,15 +163,20 @@
                 </div>
                 
                 <div class="flex flex-wrap justify-center items-center gap-x-6 gap-y-3 text-sm text-gray-500 mt-4 md:mt-0">
-                    <a href="/weekly" class="hover:text-black dark:hover:text-white transition-colors">Weekly News</a>
+                    <a href="/daily" class="hover:text-black dark:hover:text-white transition-colors">Daily News</a>
                     <a href="/archive" class="hover:text-black dark:hover:text-white transition-colors">Archive</a>
                     <a href="/rss.xml" class="hover:text-black dark:hover:text-white transition-colors">RSS Feed</a>
-                    <a href="#" class="hover:text-black dark:hover:text-white transition-colors">Twitter</a>
-                    <a href="#" class="hover:text-black dark:hover:text-white transition-colors">GitHub</a>
+                    <a href="https://leetcode.com/err0rgod" target="_blank" rel="noopener noreferrer" class="hover:text-black dark:hover:text-white transition-colors">LeetCode</a>
+                    <a href="https://instagram.com/err0rgod" target="_blank" rel="noopener noreferrer" class="hover:text-black dark:hover:text-white transition-colors">Instagram</a>
+                    <a href="https://github.com/err0rgod" target="_blank" rel="noopener noreferrer" class="hover:text-black dark:hover:text-white transition-colors">GitHub</a>
+                    <a href="https://x.com/err0rgod" target="_blank" rel="noopener noreferrer" class="hover:text-black dark:hover:text-white transition-colors">X</a>
+                    <a href="https://err0rgod.medium.com" target="_blank" rel="noopener noreferrer" class="hover:text-black dark:hover:text-white transition-colors">Medium</a>
+                    <a href="https://linkedin.com/in/nirbhay-katiyar" target="_blank" rel="noopener noreferrer" class="hover:text-black dark:hover:text-white transition-colors">LinkedIn</a>
+                    <a href="/privacy" class="hover:text-black dark:hover:text-white transition-colors">Privacy Policy</a>
                 </div>
             </div>
             <div class="mt-8 text-center text-xs text-gray-500">
-                &copy; {{ range(2026, 2027)|random }} ZeroDaily. Automatically generated every week.
+                &copy; {{ range(2026, 2027)|random }} ZeroDaily. Automatically generated every day.
             </div>
         </div>
     </footer>

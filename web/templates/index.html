@@ -1,6 +1,6 @@
 {% extends "base.html" %}
 
-{% block title %}Cybersecurity Weekly Brief{% endblock %}
+{% block title %}Cybersecurity Daily Brief{% endblock %}
 
 {% block content %}
 <!-- Hero Section -->
@@ -13,7 +13,7 @@
             <span class="text-black dark:text-white">Threat Landscape</span>
         </h1>
         <p class="text-base sm:text-lg md:text-xl text-gray-600 dark:text-gray-400 mb-10 max-w-2xl mx-auto leading-relaxed">
-            Curated cybersecurity news, distilled vulnerability breakdowns, and the latest threat research. Delivered automatically every week.
+            Curated cybersecurity news, distilled vulnerability breakdowns, and the latest threat research. Delivered automatically every day.
         </p>
         
         <!-- Subscribe Form -->
@@ -203,7 +203,7 @@ document.getElementById('subscribe-form').addEventListener('submit', async (e) =
                 <span class="text-sm font-medium text-gray-400">{{ d }}</span>
             </div>
             <h3 class="text-lg font-extrabold mb-2 group-hover:underline transition-all">Issue {{ d }}</h3>
-            <p class="text-sm text-gray-500 line-clamp-2">Weekly digest of top cybersecurity news, critical CVEs, and the latest threat landscape updates.</p>
+            <p class="text-sm text-gray-500 line-clamp-2">Daily digest of top cybersecurity news, critical CVEs, and the latest threat landscape updates.</p>
         </a>
         {% endfor %}
     </div>

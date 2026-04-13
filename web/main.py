@@ -102,7 +102,7 @@ def _generate_tokens() -> dict:
 @app.route("/")
 def read_root():
     if request.cookies.get("is_subscribed") == "true":
-        return redirect(url_for("read_weekly"))
+        return redirect(url_for("read_daily"))
 
     dates = get_issue_dates()
     latest_date = dates[0] if dates else None
@@ -120,8 +120,8 @@ def read_issue(date_str):
         abort(404)
     return render_template("issue.html", issue=data, date_str=date_str)
 
-@app.route("/weekly")
-def read_weekly():
+@app.route("/daily")
+def read_daily():
     dates = get_issue_dates()
     if not dates:
         abort(404)
@@ -140,6 +140,10 @@ def read_search():
     q = request.args.get("q", "")
     results = search_articles(q) if q else []
     return render_template("search.html", query=q, results=results)
+
+@app.route("/privacy")
+def read_privacy():
+    return render_template("privacy.html")
 
 # ======================================================================
 # API Endpoints
@@ -261,7 +265,7 @@ def get_rss():
     fg = FeedGenerator()
     fg.title("ZeroDaily")
     fg.link(href=request.url_root, rel="alternate")
-    fg.description("Weekly insights on cybersecurity news, vulnerabilities, and research.")
+    fg.description("Daily insights on cybersecurity news, vulnerabilities, and research.")
     fg.language("en")
 
     dates = get_issue_dates()
@@ -290,16 +294,17 @@ def sitemap():
     base_url = request.url_root.rstrip('/')
     urls = [
         {"loc": f"{base_url}/", "changefreq": "daily", "priority": "1.0"},
-        {"loc": f"{base_url}/weekly", "changefreq": "daily", "priority": "0.9"},
-        {"loc": f"{base_url}/archive", "changefreq": "weekly", "priority": "0.8"},
-        {"loc": f"{base_url}/rss.xml", "changefreq": "weekly", "priority": "0.3"},
+        {"loc": f"{base_url}/daily", "changefreq": "daily", "priority": "0.9"},
+        {"loc": f"{base_url}/archive", "changefreq": "daily", "priority": "0.8"},
+        {"loc": f"{base_url}/rss.xml", "changefreq": "daily", "priority": "0.3"},
+        {"loc": f"{base_url}/privacy", "changefreq": "monthly", "priority": "0.5"},
     ]
 
     for date_str in get_issue_dates():
         urls.append({
             "loc": f"{base_url}/issue/{date_str}",
             "lastmod": date_str,
-            "changefreq": "weekly",
+            "changefreq": "daily",
             "priority": "0.7",
         })
 
