@@ -18,7 +18,7 @@ from dotenv import load_dotenv
 # Load .env
 load_dotenv(os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), ".env"), override=True)
 
-from lib.content import get_issue_dates, get_issue_data, get_latest_issue, search_articles
+from lib.content import get_issue_dates, get_issue_data, get_latest_issue, search_articles, delete_issue
 from feedgen.feed import FeedGenerator
 from sqlalchemy.orm import Session
 from lib.db import engine, get_db, PageView, ReadSession, init_db
@@ -444,13 +444,26 @@ def admin_delete_subscriber():
     remove_subscriber(email)
     return redirect(url_for("admin_panel", msg="deleted"))
 
+@app.route("/admin/delete-issue", methods=["POST"])
+@admin_required
+def admin_delete_issue():
+    date_str = request.form.get("date_str")
+    if date_str:
+        delete_issue(date_str)
+    return redirect(url_for("admin_panel", msg="issue_deleted"))
+
 @app.route("/admin/send-email", methods=["POST"])
 @admin_required
 def admin_send_email():
+    target_email = request.form.get("target_email")
     subject = request.form.get("subject")
     body = request.form.get("body")
     try:
-        emails = get_active_verified_emails()
+        if target_email:
+            emails = [target_email]
+        else:
+            emails = get_active_verified_emails()
+            
         if not emails:
             return redirect(url_for("admin_panel", error="no_subscribers"))
 

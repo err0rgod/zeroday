@@ -147,3 +147,35 @@ def search_articles(query: str) -> List[Dict]:
             results.append(article)
             
     return results
+
+def delete_issue(date_str: str) -> bool:
+    """Deletes an issue by date from Azure Blob Storage and local fallback."""
+    deleted = False
+    
+    service, container = _get_blob_service()
+    if service:
+        try:
+            container_client = service.get_container_client(container)
+            blob_client = container_client.get_blob_client(f"issue_{date_str}.json")
+            if blob_client.exists():
+                blob_client.delete_blob()
+                deleted = True
+        except Exception as e:
+            print(f"Error deleting blob {date_str}: {e}")
+            
+    import shutil
+    target_dir = os.path.join(OUTPUT_DIR, date_str)
+    if os.path.exists(target_dir):
+        try:
+            shutil.rmtree(target_dir)
+            deleted = True
+        except Exception as e:
+            print(f"Error deleting local dir {target_dir}: {e}")
+            
+    if deleted:
+        if date_str in _blob_cache["issues"]:
+            del _blob_cache["issues"][date_str]
+        _blob_cache["dates"] = None
+        _blob_cache["last_checked"] = 0
+            
+    return deleted
