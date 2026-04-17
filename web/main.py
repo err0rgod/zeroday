@@ -446,16 +446,37 @@ def admin_panel():
 @admin_required
 def admin_delete_subscriber():
     email = request.form.get("email")
-    remove_subscriber(email)
-    return redirect(url_for("admin_panel", msg="deleted"))
+    if not email:
+        return redirect(url_for("admin_panel", error="delete_failed"))
+    try:
+        success = remove_subscriber(email)
+        if success:
+            print(f"[ADMIN] Successfully deleted subscriber: {email}")
+            return redirect(url_for("admin_panel", msg="deleted"))
+        else:
+            print(f"[ADMIN] remove_subscriber returned False for: {email}")
+            return redirect(url_for("admin_panel", error="delete_failed"))
+    except Exception as e:
+        print(f"[ADMIN] Exception deleting subscriber {email}: {e}")
+        return redirect(url_for("admin_panel", error="delete_failed"))
 
 @app.route("/admin/delete-issue", methods=["POST"])
 @admin_required
 def admin_delete_issue():
     date_str = request.form.get("date_str")
-    if date_str:
-        delete_issue(date_str)
-    return redirect(url_for("admin_panel", msg="issue_deleted"))
+    if not date_str:
+        return redirect(url_for("admin_panel", error="delete_issue_failed"))
+    try:
+        success = delete_issue(date_str)
+        if success:
+            print(f"[ADMIN] Successfully deleted issue: {date_str}")
+            return redirect(url_for("admin_panel", msg="issue_deleted"))
+        else:
+            print(f"[ADMIN] delete_issue returned False for: {date_str}")
+            return redirect(url_for("admin_panel", error="delete_issue_failed"))
+    except Exception as e:
+        print(f"[ADMIN] Exception deleting issue {date_str}: {e}")
+        return redirect(url_for("admin_panel", error="delete_issue_failed"))
 
 @app.route("/admin/send-email", methods=["POST"])
 @admin_required

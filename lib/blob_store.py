@@ -67,7 +67,9 @@ def save_subscribers(data: list) -> bool:
         print(f"[BLOB] Saved {len(data)} subscribers to blob.")
         return True
     except Exception as e:
+        import traceback
         print(f"[BLOB] save_subscribers error: {e}")
+        traceback.print_exc()
         return False
 
 
@@ -163,11 +165,17 @@ def update_subscriber(email: str, **kwargs) -> bool:
 
 def remove_subscriber(email: str) -> bool:
     """Remove a subscriber by email and re-save."""
+    print(f"[BLOB] remove_subscriber called for: {email}")
     subscribers = load_subscribers()
+    print(f"[BLOB] Loaded {len(subscribers)} subscribers from blob")
     new_list = [s for s in subscribers if s.get("email", "").lower() != email.lower()]
     if len(new_list) == len(subscribers):
+        print(f"[BLOB] Email '{email}' NOT FOUND in subscriber list. Emails in list: {[s.get('email','') for s in subscribers]}")
         return False  # not found
-    return save_subscribers(new_list)
+    print(f"[BLOB] Filtered list: {len(subscribers)} -> {len(new_list)} (removed {len(subscribers) - len(new_list)} entries)")
+    result = save_subscribers(new_list)
+    print(f"[BLOB] save_subscribers returned: {result}")
+    return result
 
 
 def get_active_verified_emails() -> list:
