@@ -8,10 +8,13 @@ import os
 PROJECT_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 DATA_DIR = os.getenv("DATA_DIR", os.path.join(PROJECT_ROOT, "data"))
 
-# Ensure the data directory exists
-os.makedirs(DATA_DIR, exist_ok=True)
-
-SQLALCHEMY_DATABASE_URL = f"sqlite:///{os.path.join(DATA_DIR, 'subscribers.db')}"
+# If running in Lambda, use /tmp for the database
+if os.getenv("AWS_LAMBDA_FUNCTION_NAME"):
+    SQLALCHEMY_DATABASE_URL = "sqlite:////tmp/subscribers.db"
+else:
+    # Ensure the data directory exists
+    os.makedirs(DATA_DIR, exist_ok=True)
+    SQLALCHEMY_DATABASE_URL = f"sqlite:///{os.path.join(DATA_DIR, 'subscribers.db')}"
 
 engine = create_engine(
     SQLALCHEMY_DATABASE_URL, connect_args={"check_same_thread": False}

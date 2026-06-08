@@ -14,6 +14,12 @@ from flask import Flask, render_template, request, redirect, url_for, jsonify, m
 from flask_limiter import Limiter
 from flask_limiter.util import get_remote_address
 from dotenv import load_dotenv
+import boto3
+import logging
+
+# Configure logging
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
 
 # Load .env
 load_dotenv(os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), ".env"), override=True)
@@ -67,6 +73,27 @@ def admin_required(f):
 
 # Initialize DB
 init_db()
+
+# --- S3 Logo Service ---
+@app.route("/static/logo.png")
+def serve_logo():
+    """Serve the logo from S3 bucket."""
+    s3_bucket = os.getenv("S3_BUCKET_NAME")
+    if not s3_bucket:
+        logger.warning("S3_BUCKET_NAME not set, falling back to local static")
+        return app.send_static_file('logo.png')
+    
+    try:
+        s3 = boto3.client('s3')
+        response = s3.get_object(Bucket=s3_bucket, Key="static/logo.png")
+        return Response(
+            response['Body'].read(),
+            mimetype='image/png',
+            headers={"Cache-Control": "public, max-age=86400"}
+        )
+    except Exception as e:
+        logger.error(f"Error fetching logo from S3: {e}")
+        return app.send_static_file('logo.png')
 
 # Global template functions
 @app.context_processor
@@ -346,25 +373,31 @@ def robots_txt():
 
 @app.route("/api/track/view", methods=["POST"])
 def track_view():
-    data = request.get_json()
-    path = data.get("path")
-    if path:
-        db = next(get_db())
-        view = PageView(path=path)
-        db.add(view)
-        db.commit()
+    try:
+        data = request.get_json()
+        path = data.get("path")
+        if path:
+            db = next(get_db())
+            view = PageView(path=path)
+            db.add(view)
+            db.commit()
+    except Exception as e:
+        logger.error(f"Tracking error (view): {e}")
     return jsonify({"success": True})
 
 @app.route("/api/track/time", methods=["POST"])
 def track_time():
-    data = request.get_json() or {}
-    path = data.get("path")
-    duration = data.get("duration_seconds")
-    if path and duration is not None:
-        db = next(get_db())
-        session = ReadSession(path=path, duration_seconds=duration)
-        db.add(session)
-        db.commit()
+    try:
+        data = request.get_json() or {}
+        path = data.get("path")
+        duration = data.get("duration_seconds")
+        if path and duration is not None:
+            db = next(get_db())
+            session = ReadSession(path=path, duration_seconds=duration)
+            db.add(session)
+            db.commit()
+    except Exception as e:
+        logger.error(f"Tracking error (time): {e}")
     return jsonify({"success": True})
 
 # ======================================================================
