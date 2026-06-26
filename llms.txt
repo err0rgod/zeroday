@@ -1,0 +1,59 @@
+# ZeroDaily Core Engine
+
+ZeroDaily is an enterprise-grade, serverless, automated threat intelligence aggregator and newsletter broadcast platform. It scours the internet for security news, processes vulnerabilities (CVEs), generates high-quality summaries using LLMs, and broadcasts them to verified subscribers. 
+
+Live Website: [zerodaily.in](https://zerodaily.in)
+
+---
+
+## ⚡ Technical Depth & Architecture
+
+### 1. Serverless Compute (AWS Lambda)
+The application is architected to run inside **AWS Lambda** containers wrapped by a WSGI adapter (such as Zappa or Mangum). This enables:
+* **True Scale-to-Zero**: Zero idle costs; the system only spins up compute capacity in response to user requests, webhook events, or cron jobs.
+* **Instant Scalability**: Handles sudden traffic spikes seamlessly.
+* **Transient Telemetry Logging**: Writes local read logs to `/tmp/subscribers.db` before syncing or running analytic aggregations.
+
+### 2. High-Availability Content Delivery (S3 & DynamoDB)
+* **Amazon S3**: Acts as a decoupled content repository. Raw newsletter issues are generated, compiled into JSON files, and uploaded directly to S3 (`issue_YYYY-MM-DD.json`). The web layer loads issues directly from S3, bypassing traditional relational database queries.
+* **Amazon DynamoDB**: Acts as the high-throughput, low-latency persistence layer for subscriber registry and metadata. Single-table design principles and Global Secondary Indexes (GSIs) are utilized to achieve O(1) time complexity for looking up verification/unsubscription tokens.
+* **Multi-Cloud Resilience**: Implements fallback adapters allowing SQLite and Azure Blob Storage connectivity as backup data planes.
+
+### 3. Smart News Aggregation & AI Summarization
+ZeroDaily integrates an automated ingestion pipeline:
+* Feeds are parsed using `feedparser` and processed via BeautifulSoup (`beautifulsoup4`) and Newspaper3k (`newspaper3k`).
+* Dry CVE logs and security payloads are processed by Groq / OpenAI LLM instances, transforming raw threat logs into readable, engaging newsletter copy.
+
+### 4. Admin Dashboard Security & Telemetry
+* Secure access via bcrypt-hashed credentials and JWT tokens stored in secure, HttpOnly, SameSite cookies.
+* Telemetry scripts track page impressions and exact reading duration to calculate user engagement.
+
+---
+
+## 🔍 SEO & Discovery Optimization
+
+ZeroDaily has built-in automated SEO routes served dynamically by the Flask engine:
+* **Robots Policy (`/robots.txt`)**: Served dynamically via `robots_txt()` in [web/main.py](file:///D:/zeroday/web/main.py#L354). Declares crawler rules, hides analytical endpoints and admin panels, and points to the sitemap location.
+* **Sitemap Engine (`/sitemap.xml`)**: Generated on-the-fly via `sitemap()` in [web/main.py](file:///D:/zeroday/web/main.py#L319). Crawls the storage backend to index all published issues dynamically, ensuring search engine spiders discover new content immediately.
+* **Syndication Feed (`/rss.xml`)**: Serves an RSS 2.0 XML feed using `feedgen` containing the latest 5 issues.
+* **Metadata & Semantics**: Utilizes HTML5 semantic elements, custom header hierarchies, and unique interactive IDs for crawler optimization.
+
+---
+
+## 📂 Codebase Manifest
+
+* **[web/main.py](file:///D:/zeroday/web/main.py)**: Web controller and server routing. Implements rate limiting, token verification, tracking APIs, feed/sitemap XML creation, and admin panels.
+* **[lib/blob_store.py](file:///D:/zeroday/lib/blob_store.py)**: Subscriber CRUD abstract interface supporting JSON formats and Azure/S3 backup persistence.
+* **[lib/content.py](file:///D:/zeroday/lib/content.py)**: Newsletter indexing, caching, content downloading, and full-text searches.
+* **[lib/db.py](file:///D:/zeroday/lib/db.py)**: SQL Alchemy metrics logging definitions for page views and reading sessions.
+* **[lib/notifications.py](file:///D:/zeroday/lib/notifications.py)**: Resend API notification integration, handling double opt-in validation emails and bulk newsletter delivery.
+* **[lib/health.py](file:///D:/zeroday/lib/health.py)**: Diagnostic checks monitoring database status, Resend API sanity, Azure storage access, and content freshness.
+* **[lib/validation.py](file:///D:/zeroday/lib/validation.py)**: Normalizes and validates incoming subscriber emails.
+
+---
+
+## 🔐 Administrative Access Details (Why /lifeng Redirects)
+
+Visiting `/lifeng` directly results in a redirect to the login screen `/login` if unauthenticated.
+* **Auth Guarding**: Route `/lifeng` is decorated with `@admin_required` (defined in [web/main.py](file:///D:/zeroday/web/main.py#L58)).
+* **Validation**: It checks for a cookie named `admin_session` containing a JWT signed with `JWT_SECRET_KEY`. If the cookie is absent, expired, or doesn't have a subject of `admin`, the decorator intercepts the request and issues a `302 Found` redirect to `/login`.
