@@ -84,11 +84,11 @@
                 <span class="text-[10px] uppercase tracking-widest text-slate-500 bg-dark-900 px-2 py-0.5 rounded border border-slate-700">Live Connectivity</span>
             </div>
             <div class="p-6 grid grid-cols-2 md:grid-cols-4 gap-4">
-                <!-- Azure Blob Health -->
+                <!-- AWS S3 Health -->
                 <div class="flex flex-col gap-1">
-                    <span class="text-xs text-slate-500 uppercase font-medium">Azure Storage</span>
+                    <span class="text-xs text-slate-500 uppercase font-medium">AWS S3 Storage</span>
                     <div class="flex items-center gap-2">
-                        {% if health.azure.status == 'healthy' %}
+                        {% if health.aws_s3.status == 'healthy' %}
                             <div class="w-2 h-2 rounded-full bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.5)]"></div>
                             <span class="text-sm font-semibold text-emerald-400">Healthy</span>
                         {% else %}
@@ -96,7 +96,7 @@
                             <span class="text-sm font-semibold text-red-400">Unhealthy</span>
                         {% endif %}
                     </div>
-                    <span class="text-[10px] text-slate-600 truncate">{{ health.azure.message }}</span>
+                    <span class="text-[10px] text-slate-600 truncate">{{ health.aws_s3.message }}</span>
                 </div>
 
                 <!-- Resend API Health -->
@@ -117,11 +117,11 @@
                     <span class="text-[10px] text-slate-600 truncate">{{ health.resend.message }}</span>
                 </div>
 
-                <!-- Database Health -->
+                <!-- DynamoDB Health -->
                 <div class="flex flex-col gap-1">
-                    <span class="text-xs text-slate-500 uppercase font-medium">Local Analytics DB</span>
+                    <span class="text-xs text-slate-500 uppercase font-medium">DynamoDB Subscribers</span>
                     <div class="flex items-center gap-2">
-                        {% if health.database.status == 'healthy' %}
+                        {% if health.dynamodb.status == 'healthy' %}
                             <div class="w-2 h-2 rounded-full bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.5)]"></div>
                             <span class="text-sm font-semibold text-emerald-400">Connected</span>
                         {% else %}
@@ -129,7 +129,7 @@
                             <span class="text-sm font-semibold text-red-400">Disconnected</span>
                         {% endif %}
                     </div>
-                    <span class="text-[10px] text-slate-600 truncate">{{ health.database.message }}</span>
+                    <span class="text-[10px] text-slate-600 truncate">{{ health.dynamodb.message }}</span>
                 </div>
 
                 <!-- Content Health -->

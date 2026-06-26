@@ -11,7 +11,7 @@ The live platform is accessible at: **[zerodaily.in](https://zerodaily.in)**
 
 ## <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#3b82f6" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: middle; margin-right: 8px;"><rect x="3" y="3" width="7" height="9"></rect><rect x="14" y="3" width="7" height="5"></rect><rect x="14" y="12" width="7" height="9"></rect><rect x="3" y="16" width="7" height="5"></rect></svg> Architectural Overview
 
-ZeroDaily is designed to be highly reliable, cost-efficient, and capable of scaling to zero when idle, while easily absorbing traffic spikes. It features a hybrid-cloud capable architecture designed to run seamlessly in **AWS Lambda** combined with **Amazon S3** and **Amazon DynamoDB**, while offering compatibility with containerized Docker environments and alternative blob stores (e.g., Azure Blob Storage).
+ZeroDaily is designed to be highly reliable, cost-efficient, and capable of scaling to zero when idle, while easily absorbing traffic spikes. It features a serverless architecture designed to run seamlessly in **AWS Lambda** combined with **Amazon S3** and **Amazon DynamoDB**, while offering compatibility with containerized Docker environments.
 
 ```mermaid
 flowchart TD
@@ -66,13 +66,12 @@ Deploying a state-of-the-art web application on AWS requires overcoming serverle
 
 ### 2. Static Content Delivery via Amazon S3
 * **Decoupled Data Store**: Weekly newsletter issues are generated offline or asynchronously via AI summaries and stored as structured JSON blobs (`issue_YYYY-MM-DD.json`) in an **S3 bucket**.
-* **Zero-Database Reads for Content**: When a reader requests a daily issue or visits the archive page, the Lambda function fetches the JSON directly from S3 (or Azure Blob storage). This reduces read loads and database contention to zero.
+* **Zero-Database Reads for Content**: When a reader requests a daily issue or visits the archive page, the Lambda function fetches the JSON directly from S3. This reduces read loads and database contention to zero.
 * **S3 Logo & Asset Service**: Dynamic brand assets like `logo.png` are served via a dedicated stream handler directly from S3, featuring customized HTTP response headers (`Cache-Control: public, max-age=86400`) to enable browser-side caching.
 
 ### 3. Subscriber Persistence with DynamoDB
 * **Single-Table Design**: The subscriber registry is stored in a DynamoDB table. Since DynamoDB offers sub-millisecond lookups, subscriber lookup operations during verification and email broadcasting are lightning fast.
 * **Secondary Indexes**: Global Secondary Indexes (GSIs) are configured on `verification_token` and `unsubscribe_token` fields, enabling O(1) query performance during authentication and unsubscribe events without performing expensive table scans.
-* **Fallback Storage Architecture**: For developer environments or multi-cloud flexibility, the application abstracts storage behind [lib/blob_store.py](file:///D:/zeroday/lib/blob_store.py) and [lib/db.py](file:///D:/zeroday/lib/db.py), allowing local SQLite databases to act as transactional trackers, and Azure Containers/local disk storage to serve as fallback stores.
 
 ---
 
@@ -121,7 +120,6 @@ Deploying a state-of-the-art web application on AWS requires overcoming serverle
 | `AWS_REGION` | The region where S3 bucket and DynamoDB tables reside (e.g., `us-east-1`). |
 | `S3_BUCKET_NAME` | The Amazon S3 bucket name holding asset and issues JSON files. |
 | `DYNAMODB_TABLE` | The Amazon DynamoDB table storing subscriber list profiles. |
-| `AZURE_STORAGE_CONNECTION_STRING` | Fallback connection string for Azure Blob Storage. |
 | `RESEND_API_KEY` | Transactional email client key used for delivering double opt-in mails. |
 | `GROQ_API_KEY` / `OPENAI_API_KEY` | API tokens used during daily news ingestion. |
 | `ADMIN_USERNAME` | Bcrypt-hashed admin username. |

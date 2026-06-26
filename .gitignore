@@ -78,3 +78,6 @@ content_gen/
 # =========================
 .DS_Store
 Thumbs.db
+
+# Packaging temp libraries
+temp_linux_libs/

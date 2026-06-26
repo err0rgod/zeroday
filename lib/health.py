@@ -1,30 +1,19 @@
 import os
 import time
-import json
 import resend
 from typing import Dict, Any
-from sqlalchemy import text
-from sqlalchemy.orm import Session
 from lib.content import get_issue_dates
 
-def check_azure_blob() -> Dict[str, Any]:
-    """Check connectivity to Azure Blob Storage."""
-    conn_str = os.getenv("AZURE_STORAGE_CONNECTION_STRING")
-    container_name = os.getenv("AZURE_CONTAINER_NAME", "news")
-    if not conn_str:
-        return {"status": "unhealthy", "message": "Connection string missing"}
-    
+def check_aws_s3() -> Dict[str, Any]:
+    """Check connectivity to AWS S3 Storage."""
+    bucket_name = os.getenv("S3_BUCKET_NAME", "zeroday-news-issues")
     try:
-        from azure.storage.blob import BlobServiceClient
+        import boto3
         start_time = time.time()
-        blob_service = BlobServiceClient.from_connection_string(conn_str, connection_timeout=5)
-        container_client = blob_service.get_container_client(container_name)
+        s3 = boto3.client("s3")
         
-        if not container_client.exists():
-            return {"status": "unhealthy", "message": f"Container '{container_name}' not found"}
-        
-        # Try to list one blob to confirm access
-        next(container_client.list_blobs(), None)
+        # Try to list one object to confirm access
+        s3.list_objects_v2(Bucket=bucket_name, MaxKeys=1)
         
         duration = round((time.time() - start_time) * 1000)
         return {"status": "healthy", "message": f"Connected ({duration}ms)"}
@@ -51,13 +40,18 @@ def check_resend_api() -> Dict[str, Any]:
             return {"status": "partial", "message": "Sending Only (cannot list keys)"}
         return {"status": "unhealthy", "message": err_msg}
 
-def check_local_db(db: Session) -> Dict[str, Any]:
-    """Check if local SQLite database is responsive."""
+def check_dynamodb() -> Dict[str, Any]:
+    """Check if DynamoDB is responsive."""
+    table_name = os.getenv("DYNAMODB_TABLE") or os.getenv("DYNAMODB_TABLE_NAME", "zeroday-subscribers")
     try:
+        import boto3
         start_time = time.time()
-        db.execute(text("SELECT 1"))
+        dynamodb = boto3.resource("dynamodb")
+        table = dynamodb.Table(table_name)
+        # Check table status
+        status = table.table_status
         duration = round((time.time() - start_time) * 1000)
-        return {"status": "healthy", "message": f"Responsive ({duration}ms)"}
+        return {"status": "healthy", "message": f"Responsive ({status}, {duration}ms)"}
     except Exception as e:
         return {"status": "unhealthy", "message": str(e)}
 
@@ -71,11 +65,11 @@ def check_content_freshness() -> Dict[str, Any]:
     except Exception as e:
         return {"status": "unhealthy", "message": str(e)}
 
-def get_system_health(db: Session) -> Dict[str, Dict[str, Any]]:
+def get_system_health(db=None) -> Dict[str, Dict[str, Any]]:
     """Run all health checks and return the summary."""
     return {
-        "azure": check_azure_blob(),
+        "aws_s3": check_aws_s3(),
         "resend": check_resend_api(),
-        "database": check_local_db(db),
+        "dynamodb": check_dynamodb(),
         "content": check_content_freshness()
     }

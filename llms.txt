@@ -17,7 +17,6 @@ The application is architected to run inside **AWS Lambda** containers wrapped b
 ### 2. High-Availability Content Delivery (S3 & DynamoDB)
 * **Amazon S3**: Acts as a decoupled content repository. Raw newsletter issues are generated, compiled into JSON files, and uploaded directly to S3 (`issue_YYYY-MM-DD.json`). The web layer loads issues directly from S3, bypassing traditional relational database queries.
 * **Amazon DynamoDB**: Acts as the high-throughput, low-latency persistence layer for subscriber registry and metadata. Single-table design principles and Global Secondary Indexes (GSIs) are utilized to achieve O(1) time complexity for looking up verification/unsubscription tokens.
-* **Multi-Cloud Resilience**: Implements fallback adapters allowing SQLite and Azure Blob Storage connectivity as backup data planes.
 
 ### 3. Smart News Aggregation & AI Summarization
 ZeroDaily integrates an automated ingestion pipeline:
@@ -43,11 +42,11 @@ ZeroDaily has built-in automated SEO routes served dynamically by the Flask engi
 ## 📂 Codebase Manifest
 
 * **[web/main.py](file:///D:/zeroday/web/main.py)**: Web controller and server routing. Implements rate limiting, token verification, tracking APIs, feed/sitemap XML creation, and admin panels.
-* **[lib/blob_store.py](file:///D:/zeroday/lib/blob_store.py)**: Subscriber CRUD abstract interface supporting JSON formats and Azure/S3 backup persistence.
-* **[lib/content.py](file:///D:/zeroday/lib/content.py)**: Newsletter indexing, caching, content downloading, and full-text searches.
+* **[lib/blob_store.py](file:///D:/zeroday/lib/blob_store.py)**: Subscriber CRUD abstract interface using DynamoDB for storage.
+* **[lib/content.py](file:///D:/zeroday/lib/content.py)**: Newsletter indexing, caching, content downloading from S3, and full-text searches.
 * **[lib/db.py](file:///D:/zeroday/lib/db.py)**: SQL Alchemy metrics logging definitions for page views and reading sessions.
 * **[lib/notifications.py](file:///D:/zeroday/lib/notifications.py)**: Resend API notification integration, handling double opt-in validation emails and bulk newsletter delivery.
-* **[lib/health.py](file:///D:/zeroday/lib/health.py)**: Diagnostic checks monitoring database status, Resend API sanity, Azure storage access, and content freshness.
+* **[lib/health.py](file:///D:/zeroday/lib/health.py)**: Diagnostic checks monitoring AWS S3 storage status, Resend API sanity, DynamoDB subscribers database access, and content freshness.
 * **[lib/validation.py](file:///D:/zeroday/lib/validation.py)**: Normalizes and validates incoming subscriber emails.
 
 ---

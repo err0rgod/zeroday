@@ -1,114 +1,92 @@
 import os
 import json
 import time
+import boto3
 from datetime import datetime
 from typing import List, Dict, Optional
-from dotenv import load_dotenv
 
-# Load .env from project root
-PROJECT_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-_env_path = os.path.join(PROJECT_ROOT, ".env")
-load_dotenv(_env_path, override=True)
+S3_BUCKET_NAME = os.getenv("S3_BUCKET_NAME", "zeroday-news-issues")
 
-DATA_DIR = os.getenv("DATA_DIR", os.path.join(PROJECT_ROOT, "data"))
-OUTPUT_DIR = os.path.join(DATA_DIR, "output")
+# Module-level S3 client - reused across Lambda invocations (container reuse)
+_s3_client = None
+
+def _get_s3_client():
+    """Return the S3 client (cached for Lambda container reuse)."""
+    global _s3_client
+    if _s3_client is None:
+        _s3_client = boto3.client("s3", region_name="ap-south-2")
+    return _s3_client
 
 # Simple in-memory cache with 60-second TTL
-_blob_cache = {
+_s3_cache = {
     "dates": None,
     "issues": {},
     "last_checked": 0
 }
 
-CACHE_TTL = 60 # Refresh every minute
-
-def _get_blob_service():
-    conn_str = os.getenv("AZURE_STORAGE_CONNECTION_STRING")
-    if not conn_str:
-        print("[CONTENT] Warning: AZURE_STORAGE_CONNECTION_STRING not found in env.")
-        return None, None
-    try:
-        from azure.storage.blob import BlobServiceClient
-        service = BlobServiceClient.from_connection_string(conn_str)
-        container = os.getenv("AZURE_CONTAINER_NAME", "news")
-        return service, container
-    except Exception as e:
-        print(f"[CONTENT] Error initializing Azure service: {e}")
-        return None, None
+CACHE_TTL = 60  # Refresh every minute
 
 def get_issue_dates() -> List[str]:
     """Returns a sorted list of all available issue dates (YYYY-MM-DD), newest first."""
-    service, container = _get_blob_service()
-    
-    if service:
-        current_time = time.time()
-        # If cache is valid, return it
-        if _blob_cache["dates"] is not None and (current_time - _blob_cache["last_checked"] < CACHE_TTL):
-            return _blob_cache["dates"]
-            
-        try:
-            container_client = service.get_container_client(container)
-            dates = []
-            for blob in container_client.list_blobs(name_starts_with="issue_"):
-                # Extract date from "issue_2026-03-24.json"
+    s3 = _get_s3_client()
+
+    current_time = time.time()
+    # If cache is valid, return it
+    if _s3_cache["dates"] is not None and (current_time - _s3_cache["last_checked"] < CACHE_TTL):
+        return _s3_cache["dates"]
+
+    try:
+        dates = []
+        response = s3.list_objects_v2(Bucket=S3_BUCKET_NAME, Prefix="issue_")
+        if "Contents" in response:
+            for obj in response["Contents"]:
+                key = obj["Key"]
                 try:
-                    date_str = blob.name.replace("issue_", "").replace(".json", "")
+                    date_str = key.replace("issue_", "").replace(".json", "")
                     datetime.strptime(date_str, "%Y-%m-%d")
                     dates.append(date_str)
                 except ValueError:
                     pass
-            dates.sort(reverse=True)
-            _blob_cache["dates"] = dates
-            _blob_cache["last_checked"] = time.time()
-            return dates
-        except Exception as e:
-            print(f"Error listing blobs: {e}")
-            pass # Fall back to local
-    
-    if not os.path.exists(OUTPUT_DIR):
+
+        # Handle pagination if more than 1000 objects
+        while response.get("IsTruncated"):
+            response = s3.list_objects_v2(
+                Bucket=S3_BUCKET_NAME,
+                Prefix="issue_",
+                ContinuationToken=response.get("NextContinuationToken")
+            )
+            if "Contents" in response:
+                for obj in response["Contents"]:
+                    key = obj["Key"]
+                    try:
+                        date_str = key.replace("issue_", "").replace(".json", "")
+                        datetime.strptime(date_str, "%Y-%m-%d")
+                        dates.append(date_str)
+                    except ValueError:
+                        pass
+
+        dates.sort(reverse=True)
+        _s3_cache["dates"] = dates
+        _s3_cache["last_checked"] = time.time()
+        return dates
+    except Exception as e:
+        print(f"[CONTENT] Error listing S3 objects: {e}")
         return []
-    
-    dates = []
-    for d in os.listdir(OUTPUT_DIR):
-        path = os.path.join(OUTPUT_DIR, d)
-        if os.path.isdir(path):
-            try:
-                datetime.strptime(d, "%Y-%m-%d")
-                dates.append(d)
-            except ValueError:
-                pass # not a date folder
-                
-    dates.sort(reverse=True)
-    return dates
 
 def get_issue_data(date_str: str) -> Optional[Dict]:
-    """Reads and returns the JSON data for a specific issue date."""
-    if date_str in _blob_cache["issues"]:
-        return _blob_cache["issues"][date_str]
+    """Reads and returns the JSON data for a specific issue date from S3."""
+    if date_str in _s3_cache["issues"]:
+        return _s3_cache["issues"][date_str]
 
-    service, container = _get_blob_service()
-    if service:
-        try:
-            container_client = service.get_container_client(container)
-            blob_client = container_client.get_blob_client(f"issue_{date_str}.json")
-            data = json.loads(blob_client.download_blob().readall())
-            _blob_cache["issues"][date_str] = data
-            return data
-        except Exception as e:
-            print(f"Error downloading blob for {date_str}: {e}")
-            pass # Fall back to local
-            
-    json_path = os.path.join(OUTPUT_DIR, date_str, "newsletter_prepared_data.json")
-    if not os.path.exists(json_path):
-        return None
-        
+    s3 = _get_s3_client()
     try:
-        with open(json_path, 'r', encoding='utf-8') as f:
-            data = json.load(f)
-            _blob_cache["issues"][date_str] = data
-            return data
+        file_key = f"issue_{date_str}.json"
+        response = s3.get_object(Bucket=S3_BUCKET_NAME, Key=file_key)
+        data = json.loads(response["Body"].read().decode("utf-8"))
+        _s3_cache["issues"][date_str] = data
+        return data
     except Exception as e:
-        print(f"Error reading {json_path}: {e}")
+        print(f"[CONTENT] Error downloading from S3 for {date_str}: {e}")
         return None
 
 def get_latest_issue() -> Optional[Dict]:
@@ -122,60 +100,46 @@ def get_all_articles() -> List[Dict]:
     """Returns a flat list of all articles across all issues (useful for search)."""
     dates = get_issue_dates()
     all_articles = []
-    
+
     for d in dates:
         issue = get_issue_data(d)
         if issue and "top_stories" in issue:
             for story in issue["top_stories"]:
                 story["issue_date"] = issue.get("date", d)
                 all_articles.append(story)
-                
+
     return all_articles
 
 def search_articles(query: str) -> List[Dict]:
     """Simple text search on article titles and summaries."""
     if not query:
         return []
-        
+
     query = query.lower()
     results = []
     for article in get_all_articles():
         title = article.get("title", "").lower()
         summary = article.get("short_summary", "").lower()
-        
+
         if query in title or query in summary:
             results.append(article)
-            
+
     return results
 
 def delete_issue(date_str: str) -> bool:
-    """Deletes an issue by date from Azure Blob Storage and local fallback."""
-    deleted = False
-    
-    service, container = _get_blob_service()
-    if service:
-        try:
-            container_client = service.get_container_client(container)
-            blob_client = container_client.get_blob_client(f"issue_{date_str}.json")
-            if blob_client.exists():
-                blob_client.delete_blob()
-                deleted = True
-        except Exception as e:
-            print(f"Error deleting blob {date_str}: {e}")
-            
-    import shutil
-    target_dir = os.path.join(OUTPUT_DIR, date_str)
-    if os.path.exists(target_dir):
-        try:
-            shutil.rmtree(target_dir)
-            deleted = True
-        except Exception as e:
-            print(f"Error deleting local dir {target_dir}: {e}")
-            
-    if deleted:
-        if date_str in _blob_cache["issues"]:
-            del _blob_cache["issues"][date_str]
-        _blob_cache["dates"] = None
-        _blob_cache["last_checked"] = 0
-            
-    return deleted
+    """Deletes an issue by date from AWS S3."""
+    s3 = _get_s3_client()
+    try:
+        file_key = f"issue_{date_str}.json"
+        s3.delete_object(Bucket=S3_BUCKET_NAME, Key=file_key)
+
+        # Invalidate cache
+        if date_str in _s3_cache["issues"]:
+            del _s3_cache["issues"][date_str]
+        _s3_cache["dates"] = None
+        _s3_cache["last_checked"] = 0
+
+        return True
+    except Exception as e:
+        print(f"[CONTENT] Error deleting S3 object {date_str}: {e}")
+        return False

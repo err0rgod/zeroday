@@ -1,203 +1,200 @@
 import os
-import json
-from typing import Optional
-from dotenv import load_dotenv
+import uuid
+import boto3
+from boto3.dynamodb.conditions import Key, Attr
+from typing import Optional, List
 
-# Load .env from project root
-_env_path = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), ".env")
-load_dotenv(_env_path, override=True)
+TABLE_NAME = os.getenv("DYNAMODB_TABLE") or os.getenv("DYNAMODB_TABLE_NAME", "zeroday-subscribers")
 
-BLOB_NAME = "subscribers.json"
-BACKUP_BLOB_NAME = "subscribers_backup.json"
+# Module-level resource - reused across Lambda invocations (container reuse)
+_dynamodb = None
+_table = None
 
+def _get_table():
+    """Return the DynamoDB table resource (cached for Lambda container reuse)."""
+    global _dynamodb, _table
+    if _table is None:
+        _dynamodb = boto3.resource("dynamodb")
+        _table = _dynamodb.Table(TABLE_NAME)
+    return _table
 
-def _get_blob_client():
-    """Return a BlobClient for the subscribers.json blob."""
-    conn_str = os.getenv("AZURE_STORAGE_CONNECTION_STRING")
-    container_name = os.getenv("AZURE_CONTAINER_NAME", "news")
-    if not conn_str:
-        raise RuntimeError("AZURE_STORAGE_CONNECTION_STRING is not set.")
-    from azure.storage.blob import BlobServiceClient
-    blob_service = BlobServiceClient.from_connection_string(conn_str)
-    container_client = blob_service.get_container_client(container_name)
-    if not container_client.exists():
-        container_client.create_container()
-    return container_client.get_blob_client(BLOB_NAME)
+def _make_key(email: str) -> dict:
+    """Build the composite key for a subscriber item."""
+    return {"PK": f"EMAIL#{email.lower()}", "SK": "PROFILE"}
 
-
-def _get_backup_blob_client():
-    """Return a BlobClient for the subscribers_backup.json blob."""
-    conn_str = os.getenv("AZURE_STORAGE_CONNECTION_STRING")
-    container_name = os.getenv("AZURE_CONTAINER_NAME", "news")
-    if not conn_str:
-        raise RuntimeError("AZURE_STORAGE_CONNECTION_STRING is not set.")
-    from azure.storage.blob import BlobServiceClient
-    blob_service = BlobServiceClient.from_connection_string(conn_str)
-    container_client = blob_service.get_container_client(container_name)
-    if not container_client.exists():
-        container_client.create_container()
-    return container_client.get_blob_client(BACKUP_BLOB_NAME)
-
-
-def load_subscribers() -> list:
-    """
-    Download and parse subscribers.json from Azure Blob Storage.
-    Returns [] if the blob does not exist or on any error.
-    """
-    try:
-        blob_client = _get_blob_client()
-        raw = blob_client.download_blob().readall().decode("utf-8-sig")
-        data = json.loads(raw)
-        if isinstance(data, list):
-            return data
-    except Exception as e:
-        err = str(e)
-        if "BlobNotFound" in err or "The specified blob does not exist" in err:
-            return []
-        print(f"[BLOB] load_subscribers error: {e}")
-    return []
-
-
-def save_subscribers(data: list) -> bool:
-    """Upload the full subscribers list to Azure Blob Storage."""
-    try:
-        blob_client = _get_blob_client()
-        payload = json.dumps(data, indent=2, ensure_ascii=False).encode("utf-8-sig")
-        blob_client.upload_blob(payload, overwrite=True)
-        print(f"[BLOB] Saved {len(data)} subscribers to blob.")
-        return True
-    except Exception as e:
-        import traceback
-        print(f"[BLOB] save_subscribers error: {e}")
-        traceback.print_exc()
-        return False
-
-
-def _append_to_backup(email: str):
-    """
-    Append an email to the backup list if not already present.
-    Never removes any entries.
-    """
-    try:
-        blob_client = _get_backup_blob_client()
-        data = []
-        try:
-            raw = blob_client.download_blob().readall().decode("utf-8-sig")
-            data = json.loads(raw)
-        except Exception:
-            pass  # Likely blob doesn't exist yet
-
-        if not isinstance(data, list):
-            data = []
-
-        email_lower = email.lower()
-        if email_lower not in [e.lower() for e in data if isinstance(e, str)]:
-            data.append(email_lower)
-            payload = json.dumps(data, indent=2, ensure_ascii=False).encode("utf-8-sig")
-            blob_client.upload_blob(payload, overwrite=True)
-            print(f"[BLOB] Added {email} to backup archive.")
-    except Exception as e:
-        print(f"[BLOB] _append_to_backup error: {e}")
-
+def _extract_email(item: dict) -> str:
+    """Extract the raw email address from a PK field."""
+    pk = item.get("PK", "")
+    return pk.replace("EMAIL#", "") if pk.startswith("EMAIL#") else pk
 
 def get_subscriber(email: str) -> Optional[dict]:
     """Return a single subscriber dict by email, or None."""
-    subscribers = load_subscribers()
-    for sub in subscribers:
-        if sub.get("email", "").lower() == email.lower():
-            return sub
-    return None
-
+    table = _get_table()
+    try:
+        response = table.get_item(Key=_make_key(email))
+        item = response.get("Item")
+        if item:
+            item["email"] = _extract_email(item)
+        return item
+    except Exception as e:
+        print(f"[DYNAMODB] Error getting subscriber {email}: {e}")
+        return None
 
 def get_subscriber_by_token(token_type: str, token_value: str) -> Optional[dict]:
     """
-    Find a subscriber by a token field.
-    token_type: 'verification_token' or 'unsubscribe_token'
+    Find a subscriber by a token field (verification_token or unsubscribe_token).
+    Uses scan with filter - acceptable for small subscriber counts.
+    For production scale, add GSIs on token fields.
     """
-    subscribers = load_subscribers()
-    for sub in subscribers:
-        if sub.get(token_type) == token_value:
-            return sub
-    return None
+    table = _get_table()
+    try:
+        response = table.scan(
+            FilterExpression=Attr(token_type).eq(token_value)
+        )
+        items = response.get("Items", [])
 
+        # Handle pagination
+        while "LastEvaluatedKey" in response:
+            response = table.scan(
+                FilterExpression=Attr(token_type).eq(token_value),
+                ExclusiveStartKey=response["LastEvaluatedKey"]
+            )
+            items.extend(response.get("Items", []))
+
+        if items:
+            items[0]["email"] = _extract_email(items[0])
+            return items[0]
+        return None
+    except Exception as e:
+        print(f"[DYNAMODB] Error getting subscriber by token {token_type}: {e}")
+        return None
 
 def add_subscriber(email: str, verification_token: str, unsubscribe_token: str,
                    created_at: str, verification_token_created_at: str) -> bool:
     """
-    Append a new subscriber entry to blob storage.
+    Create a new subscriber entry in DynamoDB.
     Returns False if the email already exists.
     """
-    subscribers = load_subscribers()
-    if any(s.get("email", "").lower() == email.lower() for s in subscribers):
+    email_lower = email.lower()
+    if get_subscriber(email_lower):
         return False
-    subscribers.append({
-        "email": email,
-        "verified_email": False,
-        "is_active": True,
-        "verification_token": verification_token,
-        "verification_token_created_at": verification_token_created_at,
-        "unsubscribe_token": unsubscribe_token,
-        "created_at": created_at,
-    })
-    # Also save to append-only backup
-    _append_to_backup(email)
-    return save_subscribers(subscribers)
 
+    table = _get_table()
+    try:
+        table.put_item(
+            Item={
+                "PK": f"EMAIL#{email_lower}",
+                "SK": "PROFILE",
+                "user_id": str(uuid.uuid4()),
+                "verified_email": False,
+                "is_active": True,
+                "verification_token": verification_token,
+                "verification_token_created_at": verification_token_created_at,
+                "unsubscribe_token": unsubscribe_token,
+                "created_at": created_at,
+            },
+            ConditionExpression="attribute_not_exists(PK)"
+        )
+        return True
+    except Exception as e:
+        print(f"[DYNAMODB] Error adding subscriber {email_lower}: {e}")
+        return False
 
 def update_subscriber(email: str, **kwargs) -> bool:
     """
     Update fields on an existing subscriber by email.
     Returns False if the subscriber is not found.
     """
-    subscribers = load_subscribers()
-    found = False
-    for sub in subscribers:
-        if sub.get("email", "").lower() == email.lower():
-            sub.update(kwargs)
-            found = True
-            break
-    if not found:
+    email_lower = email.lower()
+    if not get_subscriber(email_lower):
         return False
-    # Ensure they are in the append-only archive
-    _append_to_backup(email)
-    return save_subscribers(subscribers)
 
+    table = _get_table()
+
+    update_expr = "SET "
+    expr_attr_values = {}
+    expr_attr_names = {}
+
+    for key, value in kwargs.items():
+        # Use expression attribute names to avoid DynamoDB reserved words
+        expr_attr_names[f"#{key}"] = key
+        expr_attr_values[f":{key}"] = value
+
+    update_expr += ", ".join([f"#{k} = :{k}" for k in kwargs.keys()])
+
+    try:
+        table.update_item(
+            Key=_make_key(email_lower),
+            UpdateExpression=update_expr,
+            ExpressionAttributeNames=expr_attr_names,
+            ExpressionAttributeValues=expr_attr_values
+        )
+        return True
+    except Exception as e:
+        print(f"[DYNAMODB] Error updating subscriber {email_lower}: {e}")
+        return False
 
 def remove_subscriber(email: str) -> bool:
-    """Remove a subscriber by email and re-save."""
-    print(f"[BLOB] remove_subscriber called for: {email}")
-    subscribers = load_subscribers()
-    print(f"[BLOB] Loaded {len(subscribers)} subscribers from blob")
-    new_list = [s for s in subscribers if s.get("email", "").lower() != email.lower()]
-    if len(new_list) == len(subscribers):
-        print(f"[BLOB] Email '{email}' NOT FOUND in subscriber list. Emails in list: {[s.get('email','') for s in subscribers]}")
-        return False  # not found
-    print(f"[BLOB] Filtered list: {len(subscribers)} -> {len(new_list)} (removed {len(subscribers) - len(new_list)} entries)")
-    result = save_subscribers(new_list)
-    print(f"[BLOB] save_subscribers returned: {result}")
-    return result
+    """Remove a subscriber by email."""
+    email_lower = email.lower()
+    if not get_subscriber(email_lower):
+        return False
 
+    table = _get_table()
+    try:
+        table.delete_item(Key=_make_key(email_lower))
+        return True
+    except Exception as e:
+        print(f"[DYNAMODB] Error removing subscriber {email_lower}: {e}")
+        return False
 
 def get_active_verified_emails() -> list:
     """Return a list of email strings for active, verified subscribers."""
-    subscribers = load_subscribers()
-    return [
-        s["email"]
-        for s in subscribers
-        if s.get("verified_email") and s.get("is_active", True)
-    ]
+    table = _get_table()
+    try:
+        response = table.scan(
+            FilterExpression=Attr("verified_email").eq(True) & Attr("is_active").eq(True)
+        )
+        emails = [_extract_email(item) for item in response.get("Items", [])]
 
+        # Handle pagination
+        while "LastEvaluatedKey" in response:
+            response = table.scan(
+                FilterExpression=Attr("verified_email").eq(True) & Attr("is_active").eq(True),
+                ExclusiveStartKey=response["LastEvaluatedKey"]
+            )
+            emails.extend([_extract_email(item) for item in response.get("Items", [])])
+
+        return emails
+    except Exception as e:
+        print(f"[DYNAMODB] Error getting active verified emails: {e}")
+        return []
 
 def count_active_verified() -> int:
     """Return the count of active, verified subscribers."""
     return len(get_active_verified_emails())
 
-
 def get_recent_subscribers(limit: int = 10) -> list:
     """Return the most recently created subscribers (newest first)."""
-    subscribers = load_subscribers()
+    table = _get_table()
     try:
-        sorted_subs = sorted(subscribers, key=lambda s: s.get("created_at", ""), reverse=True)
-    except Exception:
-        sorted_subs = subscribers
-    return sorted_subs[:limit]
+        response = table.scan()
+        all_items = response.get("Items", [])
+
+        while "LastEvaluatedKey" in response:
+            response = table.scan(ExclusiveStartKey=response["LastEvaluatedKey"])
+            all_items.extend(response.get("Items", []))
+
+        # Inject email field from PK for downstream consumers
+        for item in all_items:
+            item["email"] = _extract_email(item)
+
+        try:
+            sorted_subs = sorted(all_items, key=lambda s: s.get("created_at", ""), reverse=True)
+        except Exception:
+            sorted_subs = all_items
+
+        return sorted_subs[:limit]
+    except Exception as e:
+        print(f"[DYNAMODB] Error getting recent subscribers: {e}")
+        return []
