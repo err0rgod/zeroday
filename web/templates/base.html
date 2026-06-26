@@ -5,8 +5,9 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{% block title %}zerodaily.in{% endblock %}</title>
     <link rel="icon" type="image/png" href="{{ url_for('static', filename='logo.png') }}">
-    <meta name="description" content="Daily insights on cybersecurity news, vulnerabilities, and research.">
+    <meta name="description" content="{% block meta_description %}Daily insights on cybersecurity news, vulnerabilities, and research.{% endblock %}">
     {% block head_extra %}{% endblock %}
+
     
     <!-- Google Fonts: Inter -->
     <link rel="preconnect" href="https://fonts.googleapis.com">

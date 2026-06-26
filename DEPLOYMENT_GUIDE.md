@@ -28,8 +28,13 @@ Admin credentials (`ADMIN_USERNAME` and `ADMIN_PASSWORD`) are stored as Bcrypt-h
 ### 2. Linux-Compatible Python Dependencies
 AWS Lambda runs on a Linux execution environment. Packing dependencies compiled on a Windows/macOS machine will lead to `Runtime.ImportModuleError` (e.g., `No module named 'sqlalchemy'`) because of architecture-specific binaries (like `greenlet`).
 * **Prevention**:
-  * Download Linux-compatible wheels (`manylinux2014_x86_64` tag) for compiled libraries and extract them directly into the deployment package.
-  * Use a containerized environment (e.g., Docker with a Python 3.9-slim image) to run `pip install` when building the package.
+
+  * Download Linux-compatible wheels (`manylinux2014_x86_64` tag) for compiled libraries like `sqlalchemy` and `greenlet` and extract them directly into the deployment package:
+    ```bash
+    pip install --platform manylinux2014_x86_64 --only-binary=:all: --target ./temp_linux_libs sqlalchemy greenlet
+    ```
+  * Alternatively, use a containerized environment (e.g., Docker with a Python 3.9-slim image) to run `pip install` when building the package.
+
 
 ---
 

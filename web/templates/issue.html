@@ -2,7 +2,10 @@
 
 {% block title %}Issue {{ date_str }} | zerodaily.in{% endblock %}
 
+{% block meta_description %}ZeroDaily cybersecurity digest for {{ date_str }}. Featuring: {% if issue.top_stories %}{{ issue.top_stories[0].title }}{% else %}daily security insights and news{% endif %}.{% endblock %}
+
 {% block progress_bar %}
+
 <div id="progress-container">
     <div id="progress-bar"></div>
 </div>
