@@ -17,7 +17,7 @@ ZeroDaily is designed to be highly reliable, cost-efficient, and capable of scal
 flowchart TD
     subgraph Client ["🌐 Client Layer"]
         User["User Browser"]
-        Admin["Admin Panel /lifeng"]
+        Admin["Admin Panel"]
     end
 
     subgraph CDN ["⚡ Delivery & Edge"]
@@ -87,7 +87,7 @@ Deploying a state-of-the-art web application on AWS requires overcoming serverle
   * Flask-Limiter configures aggressive rate-limiting on sensitive subscription/login routes.
   * Honey-pot fields (`b_url`) intercept automated spam bots.
 * <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#3b82f6" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: middle; margin-right: 6px;"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"></polyline><polyline points="17 6 23 6 23 12"></polyline></svg> **SEO-Engine Ready**: Automatically updates an XML sitemap and a standard RSS feed (`rss.xml`) dynamically as new newsletter issues are published. Includes a `robots.txt` configuration to prevent search engine indexing of sensitive endpoints.
-* <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#3b82f6" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: middle; margin-right: 6px;"><rect x="2" y="3" width="20" height="14" rx="2" ry="2"></rect><line x1="8" y1="21" x2="16" y2="21"></line><line x1="12" y1="17" x2="12" y2="21"></line></svg> **Telemetry Dashboard (`/lifeng`)**: An interface for admins to monitor total/recent subscribers, database metrics, average reading time, top pages, and system health status.
+* <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#3b82f6" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: middle; margin-right: 6px;"><rect x="2" y="3" width="20" height="14" rx="2" ry="2"></rect><line x1="8" y1="21" x2="16" y2="21"></line><line x1="12" y1="17" x2="12" y2="21"></line></svg> **Telemetry Dashboard**: An interface for admins to monitor total/recent subscribers, database metrics, average reading time, top pages, and system health status.
 
 ---
 
@@ -111,50 +111,6 @@ Deploying a state-of-the-art web application on AWS requires overcoming serverle
 │   ├── update.sh / rollback.sh # Zero-downtime deployment pipelines for host servers
 │   └── docker-compose.yml      # Orchestration configuration for local development
 ```
-
----
-
-## <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#3b82f6" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: middle; margin-right: 8px;"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"></path></svg> Local Development Setup
-
-To run ZeroDaily locally, follow these steps:
-
-### Prerequisites
-* Python 3.10+ or Docker installed.
-* Credentials for AWS (or Azure Storage credentials if using the blob fallback).
-* A Resend API key for verification email test broadcasts.
-
-### Run with Docker Compose (Recommended)
-1. Clone the repository and navigate to the project directory:
-   ```bash
-   git clone https://github.com/your-repo/zeroday.git
-   cd zeroday
-   ```
-2. Create your `.env` file using the template:
-   ```bash
-   cp .env.example .env
-   ```
-   *Edit `.env` and fill in your API keys (e.g., `GROQ_API_KEY`, `RESEND_API_KEY`).*
-
-3. Launch the containerized application:
-   ```bash
-   ./start.sh
-   ```
-   *The application will compile and become accessible at `http://localhost:8000`.*
-
-### Run Manually using Python Virtual Environment
-1. Initialize the virtual environment:
-   ```bash
-   python -m venv .venv
-   source .venv/bin/activate  # On Windows: .venv\Scripts\activate
-   ```
-2. Install requirements:
-   ```bash
-   pip install -r requirements.txt
-   ```
-3. Run the Flask application:
-   ```bash
-   python web/main.py
-   ```
 
 ---
 
