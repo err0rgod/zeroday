@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{% block title %}zerodaily.in{% endblock %}</title>
-    <link rel="icon" type="image/png" href="{{ url_for('static', filename='logo.png') }}">
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%238b5cf6' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z'/%3E%3Cpath d='M9 9h6l-6 6h6'/%3E%3C/svg%3E">
     <meta name="description" content="{% block meta_description %}Daily insights on cybersecurity news, vulnerabilities, and research.{% endblock %}">
     {% block head_extra %}{% endblock %}
 
@@ -88,7 +88,10 @@
                 <!-- Logo -->
                 <div class="flex-shrink-0 py-2">
                     <a href="/" class="flex items-center gap-3">
-                        <img src="/static/logo.png" alt="ZeroDaily Logo" class="w-9 h-9 object-contain rounded-md" onerror="this.src='data:image/svg+xml;utf8,<svg xmlns=\'http://www.w3.org/2000/svg\' width=\'40\' height=\'40\'><rect width=\'40\' height=\'40\' rx=\'8\' fill=\'#8b5cf6\'/><text x=\'50%\' y=\'50%\' font-family=\'sans-serif\' font-size=\'15\' font-weight=\'bold\' fill=\'white\' text-anchor=\'middle\' dy=\'.35em\'>ZD</text></svg>'">
+                        <svg class="w-9 h-9 text-[#8b5cf6]" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" fill="rgba(139, 92, 246, 0.1)"/>
+                            <path d="M9 9h6l-6 6h6" stroke-width="2.5"/>
+                        </svg>
                         <span class="font-bold text-xl tracking-tight">ZeroDaily</span>
                     </a>
                 </div>
@@ -160,7 +163,10 @@
         <div class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
             <div class="flex flex-col md:flex-row justify-between items-center gap-6">
                 <div class="flex items-center gap-3">
-                    <img src="/static/logo.png" alt="ZeroDaily Logo" class="w-8 h-8 object-contain rounded opacity-80" onerror="this.src='data:image/svg+xml;utf8,<svg xmlns=\'http://www.w3.org/2000/svg\' width=\'32\' height=\'32\'><rect width=\'32\' height=\'32\' fill=\'#334155\'/><text x=\'50%\' y=\'50%\' font-family=\'sans-serif\' font-size=\'12\' fill=\'white\' text-anchor=\'middle\' dy=\'.3em\'>ZD</text></svg>'">
+                    <svg class="w-8 h-8 text-[#8b5cf6] opacity-80" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" fill="rgba(139, 92, 246, 0.1)"/>
+                        <path d="M9 9h6l-6 6h6" stroke-width="2.5"/>
+                    </svg>
                     <span class="font-semibold text-lg">ZeroDaily</span>
                 </div>
                 

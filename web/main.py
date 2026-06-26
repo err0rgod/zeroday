@@ -74,27 +74,6 @@ def admin_required(f):
 # Initialize DB
 init_db()
 
-# --- S3 Logo Service ---
-@app.route("/static/logo.png")
-def serve_logo():
-    """Serve the logo from S3 bucket."""
-    s3_bucket = os.getenv("S3_BUCKET_NAME")
-    if not s3_bucket:
-        logger.warning("S3_BUCKET_NAME not set, falling back to local static")
-        return app.send_static_file('logo.png')
-    
-    try:
-        s3 = boto3.client('s3')
-        response = s3.get_object(Bucket=s3_bucket, Key="static/logo.png")
-        return Response(
-            response['Body'].read(),
-            mimetype='image/png',
-            headers={"Cache-Control": "public, max-age=86400"}
-        )
-    except Exception as e:
-        logger.error(f"Error fetching logo from S3: {e}")
-        return app.send_static_file('logo.png')
-
 # Global template functions
 @app.context_processor
 def utility_processor():
