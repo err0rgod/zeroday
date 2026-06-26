@@ -5,7 +5,6 @@ import resend
 from typing import Dict, Any
 from sqlalchemy import text
 from sqlalchemy.orm import Session
-from azure.storage.blob import BlobServiceClient
 from lib.content import get_issue_dates
 
 def check_azure_blob() -> Dict[str, Any]:
@@ -16,6 +15,7 @@ def check_azure_blob() -> Dict[str, Any]:
         return {"status": "unhealthy", "message": "Connection string missing"}
     
     try:
+        from azure.storage.blob import BlobServiceClient
         start_time = time.time()
         blob_service = BlobServiceClient.from_connection_string(conn_str, connection_timeout=5)
         container_client = blob_service.get_container_client(container_name)
