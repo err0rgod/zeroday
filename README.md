@@ -108,9 +108,9 @@ Deploying a state-of-the-art web application on AWS requires overcoming serverle
 │   │   ├── notifications.py    # Resend email client integration (double opt-in)
 │   │   └── validation.py       # Email normalization & parsing safety checks
 │   ├── data/                   # Local database storage volume directory
-│   ├── start.sh / stop.sh      # Docker Compose initialization shell scripts
-│   ├── update.sh / rollback.sh # Zero-downtime deployment pipelines for host servers
-│   └── docker-compose.yml      # Orchestration configuration for local development
+│   ├── build_zip.py            # Deployment archiver that handles AWS Linux ZIP rules
+│   ├── handler.py              # WSGI adapter for Lambda invocation
+│   └── DEPLOYMENT_GUIDE.md     # Full step-by-step AWS Lambda deployment manual
 ```
 
 ---
