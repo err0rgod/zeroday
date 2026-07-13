@@ -30,6 +30,21 @@
     </div>
 
     <!-- Divider -->
+    <!-- Roast Summary Section -->
+    <div class="mb-12 bg-red-50 dark:bg-red-900/20 border-l-4 border-red-500 p-6 rounded-r-lg">
+        <h2 class="text-xl font-bold text-red-700 dark:text-red-400 mb-2 flex items-center gap-2">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 18.657A8 8 0 016.343 7.343S7 9 9 10c0-2 .5-5 2.986-7C14 5 16.09 5.777 17.656 7.343A7.975 7.975 0 0120 13a7.975 7.975 0 01-2.343 5.657z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.879 16.121A3 3 0 1012.015 11L11 14H9c0 .768.293 1.536.879 2.121z"></path></svg>
+            Today's Roast
+        </h2>
+        <p class="text-red-900 dark:text-red-200 font-medium leading-relaxed">
+            {% if issue.roast_summary %}
+            {{ issue.roast_summary }}
+            {% else %}
+            Another day, another enterprise realizing that "admin123" isn't a robust security strategy. Watch as millions of user records fly out the door while compliance teams frantically update their LinkedIn profiles. Stay tuned for the inevitable "we take your privacy seriously" apology emails.
+            {% endif %}
+        </p>
+    </div>
+
     <!-- Divider -->
     <div class="h-px bg-gray-200 dark:bg-gray-800 w-full mb-16"></div>
 
@@ -67,7 +82,14 @@
                 
                 <div class="prose prose-sm sm:prose-base md:prose-lg dark:prose-invert max-w-none text-gray-800 dark:text-gray-200">
                     <p class="font-bold text-lg leading-relaxed mb-4">{{ story.short_summary }}</p>
-                    <p class="text-gray-600 dark:text-gray-400 leading-relaxed">{{ story.deep_summary }}</p>
+                    <details class="group/details">
+                        <summary class="cursor-pointer text-sm font-semibold text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300 select-none flex items-center gap-1 mb-2 transition-colors">
+                            <span class="group-open/details:hidden">Read Full Story</span>
+                            <span class="hidden group-open/details:inline">Collapse Story</span>
+                            <svg class="w-4 h-4 transform group-open/details:rotate-180 transition-transform duration-200" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
+                        </summary>
+                        <p class="text-gray-600 dark:text-gray-400 leading-relaxed pt-2">{{ story.deep_summary }}</p>
+                    </details>
                 </div>
             </div>
             {% endfor %}

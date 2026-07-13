@@ -83,10 +83,11 @@ Deploying a state-of-the-art web application on AWS requires overcoming serverle
 * <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#3b82f6" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: middle; margin-right: 6px;"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path></svg> **Security Hardening**:
   * Admin accounts are secured using **bcrypt** hashed credential matches.
   * Successful logins issue short-lived **JWT (JSON Web Tokens)** stored in HTTPOnly, SameSite cookies.
-  * Flask-Limiter configures aggressive rate-limiting on sensitive subscription/login routes.
-  * Honey-pot fields (`b_url`) intercept automated spam bots.
-* <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#3b82f6" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: middle; margin-right: 6px;"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"></polyline><polyline points="17 6 23 6 23 12"></polyline></svg> **SEO-Engine Ready**: Automatically updates an XML sitemap and a standard RSS feed (`rss.xml`) dynamically as new newsletter issues are published. Includes a `robots.txt` configuration to prevent search engine indexing of sensitive endpoints.
-* <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#3b82f6" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: middle; margin-right: 6px;"><rect x="2" y="3" width="20" height="14" rx="2" ry="2"></rect><line x1="8" y1="21" x2="16" y2="21"></line><line x1="12" y1="17" x2="12" y2="21"></line></svg> **Telemetry Dashboard**: An interface for admins to monitor total/recent subscribers, database metrics, average reading time, top pages, and system health status.
+  * Hardcoded secrets removed. Configurations loaded safely via environment variables.
+* <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#3b82f6" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: middle; margin-right: 6px;"><path d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4"></path></svg> **Continuous Integration**: Integrated GitHub Actions CI/CD pipeline automates syntax testing and verifies build dependencies on every push.
+* <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#3b82f6" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: middle; margin-right: 6px;"><path d="M12 20h9"></path><path d="M16.5 3.5a2.121 2.121 0 013 3L7 19l-4 1 1-4L16.5 3.5z"></path></svg> **Daily Hack Roasts**: Features a witty "Today's Roast" summary of recent hacks. Long security stories are neatly collapsed by default to keep the reading experience focused.
+* <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#3b82f6" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: middle; margin-right: 6px;"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"></polyline><polyline points="17 6 23 6 23 12"></polyline></svg> **SEO-Engine Ready**: Automatically updates an XML sitemap and a standard RSS feed (`rss.xml`) dynamically. Includes a `robots.txt` configuration.
+* <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#3b82f6" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: middle; margin-right: 6px;"><rect x="2" y="3" width="20" height="14" rx="2" ry="2"></rect><line x1="8" y1="21" x2="16" y2="21"></line><line x1="12" y1="17" x2="12" y2="21"></line></svg> **Telemetry Dashboard**: An interface for admins to monitor total/recent subscribers, database metrics, and system health status.
 
 ---
 
@@ -94,6 +95,7 @@ Deploying a state-of-the-art web application on AWS requires overcoming serverle
 
 ```text
 ├── D:\zeroday/
+│   ├── .github/                # GitHub Actions CI/CD workflows
 │   ├── web/                    # Flask Application & Web Layer
 │   │   ├── static/             # Local fallbacks for branding assets
 │   │   ├── templates/          # Jinja2 HTML templates (Home, Issue, Dashboard, Auth)
