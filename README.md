@@ -21,13 +21,11 @@ For a detailed breakdown of the serverless architecture, AWS infrastructure, and
 * **Robust Double Opt-In Flow**: Protects against spam using cryptographic verification tokens. Generates unique verification and unsubscribe tokens per subscriber, with email deliverability managed through the Resend API.
 * **Analytics & Engagement Telemetry**: Custom JavaScript trackers log page-views and active reading session durations. The Flask endpoint logs session lengths and computes average read times to gauge content interest.
 * **Security Hardening**:
-  * Admin accounts are secured using bcrypt hashed credential matches.
-  * Successful logins issue short-lived JWT (JSON Web Tokens) stored in HTTPOnly, SameSite cookies.
   * Configurations loaded safely via environment variables.
 * **Continuous Integration**: Integrated GitHub Actions CI/CD pipeline automates syntax testing and verifies build dependencies on every push.
 * **Daily Hack Roasts**: Features a witty daily summary of recent hacks. Long security stories are neatly collapsed by default to keep the reading experience focused.
 * **SEO-Engine Ready**: Automatically updates an XML sitemap and a standard RSS feed dynamically. Includes a robots.txt configuration.
-* **Telemetry Dashboard**: An interface for admins to monitor total/recent subscribers, database metrics, and system health status.
+* **Telemetry Dashboard**: An internal interface to monitor total/recent subscribers, database metrics, and system health status.
 
 ---
 
@@ -39,7 +37,7 @@ For a detailed breakdown of the serverless architecture, AWS infrastructure, and
 │   ├── web/                    # Flask Application & Web Layer
 │   │   ├── static/             # Local fallbacks for branding assets
 │   │   ├── templates/          # Jinja2 HTML templates
-│   │   └── main.py             # App entrypoint, routing, tracking, and Admin endpoints
+│   │   └── main.py             # App entrypoint, routing, tracking, and dashboard endpoints
 │   ├── lib/                    # Core Business & Infrastructure Logic
 │   │   ├── blob_store.py       # Subscribers storage layer
 │   │   ├── content.py          # Issues content fetching, caching, and text search
@@ -64,9 +62,6 @@ For a detailed breakdown of the serverless architecture, AWS infrastructure, and
 | `DYNAMODB_TABLE` | The Amazon DynamoDB table storing subscriber list profiles. |
 | `RESEND_API_KEY` | Transactional email client key used for delivering double opt-in mails. |
 | `GROQ_API_KEY` / `OPENAI_API_KEY` | API tokens used during daily news ingestion. |
-| `ADMIN_USERNAME` | Bcrypt-hashed admin username. |
-| `ADMIN_PASSWORD` | Bcrypt-hashed admin password. |
-| `JWT_SECRET_KEY` | Symmetric key used to sign Admin Web tokens. |
 | `FLASK_SECRET_KEY` | Web application session signing key. |
 
 ---

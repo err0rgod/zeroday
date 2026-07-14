@@ -8,7 +8,7 @@ ZeroDaily is designed to be highly reliable, cost-efficient, and capable of scal
 flowchart TD
     subgraph Client ["Client Layer"]
         User["User Browser"]
-        Admin["Admin Panel"]
+        Dashboard["Internal Dashboard"]
     end
 
     subgraph CDN ["Delivery & Edge"]
@@ -34,7 +34,7 @@ flowchart TD
     User -->|HTTPS| Route53
     Route53 --> APIGateway
     APIGateway --> Lambda
-    Admin -->|JWT Auth| Lambda
+    Dashboard -->|JWT Auth| Lambda
     
     Lambda -->|Get Issues / Serve Logo| S3
     Lambda -->|Manage Subscribers| Dynamo

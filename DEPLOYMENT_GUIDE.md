@@ -17,12 +17,12 @@ This guide details the procedure for packaging, verifying, and deploying the Zer
 ## Key Deployment Safeguards
 
 ### 1. Shell Expansion Hazard with Bcrypt Hashes
-Admin credentials (`ADMIN_USERNAME` and `ADMIN_PASSWORD`) are stored as Bcrypt-hashed strings. Because Bcrypt hashes contain multiple `$` symbols (e.g. `$2b$12$...`), deploying them directly via CLI environment variables triggers shell parameter expansion. This corrupts the hash value and causes login failures (500/401 errors).
+Certain internal credentials are stored as Bcrypt-hashed strings. Because Bcrypt hashes contain multiple `$` symbols (e.g. `$2b$12$...`), deploying them directly via CLI environment variables triggers shell parameter expansion. This corrupts the hash value and causes authentication failures (500/401 errors).
 * **Prevention**: Never pass unescaped `$` strings to CLI commands. Instead:
   * Quote them carefully using single quotes (`'$2b$...'`) in bash/zsh, or use escape characters (``$` or `^$`) in Windows command prompts/PowerShell.
   * Prefer updating configuration variables using a clean JSON payload file:
     ```bash
-    aws lambda update-function-configuration --function-name zeroday-news-dev-api --environment '{"Variables": {"ADMIN_USERNAME": "$2b$12$...", "ADMIN_PASSWORD": "$2b$12$..."}}'
+    aws lambda update-function-configuration --function-name zeroday-news-dev-api --environment '{"Variables": {"INTERNAL_HASH": "$2b$12$..."}}'
     ```
 
 ### 2. Linux-Compatible Python Dependencies
