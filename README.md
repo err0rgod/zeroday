@@ -55,14 +55,13 @@ For a detailed breakdown of the serverless architecture, AWS infrastructure, and
 
 ## Environment Variables Configuration
 
-| Environment Variable | Description |
-|---|---|
-| `AWS_REGION` | The region where S3 bucket and DynamoDB tables reside (e.g., `us-east-1`). |
-| `S3_BUCKET_NAME` | The Amazon S3 bucket name holding asset and issues JSON files. |
-| `DYNAMODB_TABLE` | The Amazon DynamoDB table storing subscriber list profiles. |
-| `RESEND_API_KEY` | Transactional email client key used for delivering double opt-in mails. |
-| `GROQ_API_KEY` / `OPENAI_API_KEY` | API tokens used during daily news ingestion. |
-| `FLASK_SECRET_KEY` | Web application session signing key. |
+Please refer to the `.env.example` file for a complete list of required environment variables. 
+
+---
+
+## Content Aggregation & Scraper
+
+The web interface is decoupled from the content ingestion engine. To learn more about how security news is scraped, summarized via LLMs, and compiled into JSON issues, visit the [bot0 Scraper Repository](https://github.com/err0rgod/bot0).
 
 ---
 
