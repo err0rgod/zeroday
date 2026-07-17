@@ -2,6 +2,7 @@ import os
 import json
 import time
 import boto3
+from botocore.config import Config
 from datetime import datetime
 from typing import List, Dict, Optional
 
@@ -14,7 +15,12 @@ def _get_s3_client():
     """Return the S3 client (cached for Lambda container reuse)."""
     global _s3_client
     if _s3_client is None:
-        _s3_client = boto3.client("s3", region_name="ap-south-2")
+        max_connections = max(10, int(os.getenv("S3_MAX_POOL_CONNECTIONS", "16")))
+        _s3_client = boto3.client(
+            "s3",
+            region_name=os.getenv("AWS_REGION", "ap-south-2"),
+            config=Config(max_pool_connections=max_connections),
+        )
     return _s3_client
 
 # Simple in-memory cache with 60-second TTL

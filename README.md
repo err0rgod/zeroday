@@ -3,9 +3,20 @@
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![Live Website](https://img.shields.io/badge/Live-zerodaily.in-blue)](https://zerodaily.in)
 
+[![Tokens used](https://zerodaily.in/badge/tokens.svg)](https://zerodaily.in)
+[![Subscribers](https://zerodaily.in/badge/subscribers.svg)](https://zerodaily.in)
+[![Posts written](https://zerodaily.in/badge/posts.svg)](https://zerodaily.in)
+
 **ZeroDaily** is a high-performance, serverless, and automated cybersecurity newsletter platform that aggregates, summarizes, and broadcasts threat intelligence, CVEs, and security news. 
 
 The live platform is accessible at: **[zerodaily.in](https://zerodaily.in)**
+
+Badge labels and colors can be customized with `left_text`, `left_color`, and
+`right_color`, for example:
+
+```markdown
+[![Subscribers](https://zerodaily.in/badge/subscribers.svg?left_text=subscribers&left_color=BLACK&right_color=GREEN)](https://zerodaily.in)
+```
 
 ---
 

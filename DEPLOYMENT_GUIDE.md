@@ -33,7 +33,7 @@ AWS Lambda runs on a Linux execution environment. Packing dependencies compiled 
     ```bash
     pip install -r requirements.txt --target ./temp_linux_libs
     pip install apig-wsgi --target ./temp_linux_libs
-    pip install --platform manylinux2014_x86_64 --only-binary=:all: --python-version 3.12 --target ./temp_linux_libs bcrypt cryptography sqlalchemy greenlet pydantic-core markupsafe cffi lxml charset-normalizer --upgrade
+    pip install --platform manylinux2014_x86_64 --only-binary=:all: --python-version 3.12 --target ./temp_linux_libs bcrypt cryptography sqlalchemy greenlet pydantic-core markupsafe cffi lxml charset-normalizer tiktoken --upgrade
     ```
   * Alternatively, use a containerized environment (e.g., Docker with a Python 3.12-slim image) to run `pip install` when building the package.
 
@@ -46,6 +46,10 @@ from web.main import app
 from apig_wsgi import make_lambda_handler
 handler = make_lambda_handler(app)
 ```
+
+The Lambda role must allow `dynamodb:TransactWriteItems` on the subscribers
+table. Badge subscriber increments use a transaction so repeated or concurrent
+email verification requests cannot increment the public counter twice.
 
 ### 4. Windows ZIP Path Separators
 When zipping files on Windows using Python's `zipfile` module, ensure all `\` are replaced with `/` before writing to the archive (`arcname = filepath.replace('\\', '/')`). Failure to do so will cause Lambda to misinterpret directories as files with backslashes in their names (e.g., `bcrypt\__init__.py`).

@@ -1,10 +1,12 @@
 import os
 import uuid
 import boto3
+from datetime import datetime, timezone
 from boto3.dynamodb.conditions import Key, Attr
 from typing import Optional, List
 
 TABLE_NAME = os.getenv("DYNAMODB_TABLE") or os.getenv("DYNAMODB_TABLE_NAME", "zeroday-subscribers")
+SUBSCRIBER_BADGE_INITIAL_VALUE = int(os.getenv("SUBSCRIBER_BADGE_INITIAL_VALUE", "62"))
 
 # Module-level resource - reused across Lambda invocations (container reuse)
 _dynamodb = None
@@ -21,6 +23,10 @@ def _get_table():
 def _make_key(email: str) -> dict:
     """Build the composite key for a subscriber item."""
     return {"PK": f"EMAIL#{email.lower()}", "SK": "PROFILE"}
+
+
+def _subscriber_badge_key() -> dict:
+    return {"PK": "METRIC#SUBSCRIBERS", "SK": "COUNT"}
 
 def _extract_email(item: dict) -> str:
     """Extract the raw email address from a PK field."""
@@ -174,15 +180,143 @@ def count_active_verified() -> int:
     """Return the count of active, verified subscribers."""
     return len(get_active_verified_emails())
 
+
+def get_or_create_subscriber_badge_counter() -> dict:
+    """Return the cumulative public subscriber counter, creating it at 62 if needed."""
+    table = _get_table()
+    initialized_at = datetime.now(timezone.utc).isoformat()
+    try:
+        table.put_item(
+            Item={
+                **_subscriber_badge_key(),
+                "value": SUBSCRIBER_BADGE_INITIAL_VALUE,
+                "initialized_at": initialized_at,
+            },
+            ConditionExpression="attribute_not_exists(PK)",
+        )
+    except table.meta.client.exceptions.ConditionalCheckFailedException:
+        pass
+
+    response = table.get_item(Key=_subscriber_badge_key(), ConsistentRead=True)
+    item = response.get("Item")
+    if not item:
+        raise RuntimeError("Subscriber badge counter is unavailable")
+    return item
+
+
+def _parse_utc_timestamp(value: str) -> Optional[datetime]:
+    if not value:
+        return None
+    try:
+        parsed = datetime.fromisoformat(value.replace("Z", "+00:00"))
+        if parsed.tzinfo is None:
+            parsed = parsed.replace(tzinfo=timezone.utc)
+        return parsed.astimezone(timezone.utc)
+    except (TypeError, ValueError):
+        return None
+
+
+def mark_subscriber_verified(email: str) -> bool:
+    """
+    Verify a subscriber and increment the public counter exactly once when eligible.
+
+    Returns True when this call increments the badge counter.
+    """
+    email_lower = email.lower()
+    subscriber = get_subscriber(email_lower)
+    if not subscriber:
+        raise ValueError("Subscriber not found")
+
+    counter = get_or_create_subscriber_badge_counter()
+    created_at = _parse_utc_timestamp(subscriber.get("created_at", ""))
+    initialized_at = _parse_utc_timestamp(counter.get("initialized_at", ""))
+    should_increment = (
+        not subscriber.get("verified_email", False)
+        and not subscriber.get("badge_counted", False)
+        and created_at is not None
+        and initialized_at is not None
+        and created_at >= initialized_at
+    )
+
+    table = _get_table()
+    if not should_increment:
+        table.update_item(
+            Key=_make_key(email_lower),
+            UpdateExpression=(
+                "SET verified_email = :verified, is_active = :active, "
+                "badge_counted = :counted"
+            ),
+            ExpressionAttributeValues={
+                ":verified": True,
+                ":active": True,
+                ":counted": True,
+            },
+        )
+        return False
+
+    client = table.meta.client
+    try:
+        client.transact_write_items(
+            TransactItems=[
+                {
+                    "Update": {
+                        "TableName": TABLE_NAME,
+                        "Key": {
+                            "PK": {"S": f"EMAIL#{email_lower}"},
+                            "SK": {"S": "PROFILE"},
+                        },
+                        "UpdateExpression": (
+                            "SET verified_email = :verified, is_active = :active, "
+                            "badge_counted = :counted"
+                        ),
+                        "ConditionExpression": (
+                            "(attribute_not_exists(verified_email) OR verified_email = :unverified) "
+                            "AND (attribute_not_exists(badge_counted) OR badge_counted = :uncounted)"
+                        ),
+                        "ExpressionAttributeValues": {
+                            ":verified": {"BOOL": True},
+                            ":unverified": {"BOOL": False},
+                            ":active": {"BOOL": True},
+                            ":counted": {"BOOL": True},
+                            ":uncounted": {"BOOL": False},
+                        },
+                    }
+                },
+                {
+                    "Update": {
+                        "TableName": TABLE_NAME,
+                        "Key": {
+                            "PK": {"S": _subscriber_badge_key()["PK"]},
+                            "SK": {"S": _subscriber_badge_key()["SK"]},
+                        },
+                        "UpdateExpression": "ADD #value :one",
+                        "ExpressionAttributeNames": {"#value": "value"},
+                        "ExpressionAttributeValues": {":one": {"N": "1"}},
+                        "ConditionExpression": "attribute_exists(PK)",
+                    }
+                },
+            ]
+        )
+        return True
+    except client.exceptions.TransactionCanceledException:
+        current = get_subscriber(email_lower)
+        if current and current.get("verified_email") and current.get("badge_counted"):
+            return False
+        raise
+
 def get_recent_subscribers(limit: int = 10) -> list:
     """Return the most recently created subscribers (newest first)."""
     table = _get_table()
     try:
-        response = table.scan()
+        profile_filter = Attr("SK").eq("PROFILE")
+        response = table.scan(FilterExpression=profile_filter)
         all_items = response.get("Items", [])
 
         while "LastEvaluatedKey" in response:
-            response = table.scan(ExclusiveStartKey=response["LastEvaluatedKey"])
+            response = table.scan(
+                FilterExpression=profile_filter,
+                ExclusiveStartKey=response["LastEvaluatedKey"],
+            )
             all_items.extend(response.get("Items", []))
 
         # Inject email field from PK for downstream consumers

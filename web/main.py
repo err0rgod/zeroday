@@ -30,10 +30,15 @@ from sqlalchemy.orm import Session
 from lib.db import engine, get_db, PageView, ReadSession, init_db
 from lib.validation import validate_and_normalize_email
 from lib.notifications import send_verification_email, send_custom_email
+from lib.badges import (
+    BADGE_COLORS, BADGE_LABELS, badge_etag, get_badge_value,
+    normalize_badge_color, normalize_badge_text, render_badge_svg,
+)
 from lib.blob_store import (
     add_subscriber, update_subscriber, remove_subscriber,
     get_subscriber, get_subscriber_by_token,
     get_active_verified_emails, count_active_verified, get_recent_subscribers,
+    get_or_create_subscriber_badge_counter, mark_subscriber_verified,
 )
 from lib.health import get_system_health
 from sqlalchemy import func
@@ -155,6 +160,40 @@ def read_privacy():
 # API Endpoints
 # ======================================================================
 
+@app.route("/badge/<metric>.svg")
+@limiter.exempt
+def badge(metric):
+    if metric not in BADGE_LABELS:
+        svg = render_badge_svg("badge", "unknown", BADGE_COLORS["black"], BADGE_COLORS["red"])
+        response = Response(svg, status=404, mimetype="image/svg+xml")
+        response.headers["Cache-Control"] = "no-store"
+        response.headers["X-Content-Type-Options"] = "nosniff"
+        return response
+
+    label = normalize_badge_text(request.args.get("left_text", ""), BADGE_LABELS[metric])
+    left_color = normalize_badge_color(
+        request.args.get("left_color", ""), BADGE_COLORS["black"]
+    )
+    right_color = normalize_badge_color(
+        request.args.get("right_color", ""), BADGE_COLORS["green"]
+    )
+
+    try:
+        value = f"{get_badge_value(metric):,}"
+        cache_control = "public, max-age=300, s-maxage=300"
+    except Exception:
+        logger.exception("Unable to generate %s badge", metric)
+        value = "unavailable"
+        right_color = BADGE_COLORS["red"]
+        cache_control = "no-store"
+
+    svg = render_badge_svg(label, value, left_color, right_color)
+    response = Response(svg, mimetype="image/svg+xml")
+    response.headers["Cache-Control"] = cache_control
+    response.headers["X-Content-Type-Options"] = "nosniff"
+    response.set_etag(badge_etag(svg))
+    return response.make_conditional(request)
+
 @app.route("/api/subscribe", methods=["POST"])
 @limiter.limit("5/hour")
 def subscribe():
@@ -196,6 +235,12 @@ def subscribe():
             )
             send_verification_email(normalized_email, tokens["verification_token"])
     else:
+        try:
+            get_or_create_subscriber_badge_counter()
+        except Exception:
+            logger.exception("Unable to initialize subscriber badge counter")
+            return jsonify({"success": False, "error": "Subscription service is temporarily unavailable."}), 503
+
         tokens = _generate_tokens()
         now = datetime.utcnow().isoformat()
         add_subscriber(
@@ -235,11 +280,11 @@ def verify_email():
             </html>
         ''', 400
 
-    update_subscriber(
-        subscriber["email"],
-        verified_email=True,
-        is_active=True,
-    )
+    try:
+        mark_subscriber_verified(subscriber["email"])
+    except Exception:
+        logger.exception("Unable to verify subscriber %s", subscriber.get("email", "unknown"))
+        return "<h1>Verification service is temporarily unavailable.</h1>", 503
 
     dates = get_issue_dates()
     redirect_url = url_for("read_issue", date_str=dates[0]) if dates else url_for("read_root")
