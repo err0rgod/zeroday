@@ -262,8 +262,8 @@ def mark_subscriber_verified(email: str) -> bool:
                     "Update": {
                         "TableName": TABLE_NAME,
                         "Key": {
-                            "PK": {"S": f"EMAIL#{email_lower}"},
-                            "SK": {"S": "PROFILE"},
+                            "PK": f"EMAIL#{email_lower}",
+                            "SK": "PROFILE",
                         },
                         "UpdateExpression": (
                             "SET verified_email = :verified, is_active = :active, "
@@ -274,24 +274,21 @@ def mark_subscriber_verified(email: str) -> bool:
                             "AND (attribute_not_exists(badge_counted) OR badge_counted = :uncounted)"
                         ),
                         "ExpressionAttributeValues": {
-                            ":verified": {"BOOL": True},
-                            ":unverified": {"BOOL": False},
-                            ":active": {"BOOL": True},
-                            ":counted": {"BOOL": True},
-                            ":uncounted": {"BOOL": False},
+                            ":verified": True,
+                            ":unverified": False,
+                            ":active": True,
+                            ":counted": True,
+                            ":uncounted": False,
                         },
                     }
                 },
                 {
                     "Update": {
                         "TableName": TABLE_NAME,
-                        "Key": {
-                            "PK": {"S": _subscriber_badge_key()["PK"]},
-                            "SK": {"S": _subscriber_badge_key()["SK"]},
-                        },
+                        "Key": _subscriber_badge_key(),
                         "UpdateExpression": "ADD #value :one",
                         "ExpressionAttributeNames": {"#value": "value"},
-                        "ExpressionAttributeValues": {":one": {"N": "1"}},
+                        "ExpressionAttributeValues": {":one": 1},
                         "ConditionExpression": "attribute_exists(PK)",
                     }
                 },
